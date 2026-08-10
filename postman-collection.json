@@ -1,0 +1,1223 @@
+{
+  "info": {
+    "name": "ReSolve API",
+    "description": "Complete collection of API routes for the ReSolve application.\n\n## Auto Token Management\nThe Login request automatically saves the access token as a collection variable. All authenticated requests use it via the collection-level pre-request script — no manual copy-paste needed.\n\n## Quick Start\n1. Create the owner account once with `bun run seed` (there is no register endpoint)\n2. Login with your OWNER_EMAIL / OWNER_PASSWORD (tokens are auto-saved)\n3. All subsequent requests automatically include the token\n4. Logout invalidates the refresh token and clears both cookies\n\n`baseUrl` assumes PORT=6000, matching .env.example.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:6000/api",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "problemId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "attemptId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "topicId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Auto-inject Authorization header for every request",
+          "const token = pm.collectionVariables.get('accessToken');",
+          "if (token) {",
+          "    pm.request.headers.upsert({",
+          "        key: 'Authorization',",
+          "        value: token",
+          "    });",
+          "}"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "description": "Authentication endpoints. Login auto-saves the tokens; Logout clears them and the cookies. There is no register endpoint — see `bun run seed`.",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/login",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"you@example.com\",\n    \"password\": \"replace-me-before-seeding\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Use the OWNER_EMAIL / OWNER_PASSWORD from your .env — the account created by `bun run seed`. Saves both tokens as collection variables."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Auto-save tokens so you never have to copy-paste",
+                  "const jsonData = pm.response.json();",
+                  "",
+                  "if (jsonData.data && jsonData.data.accessToken) {",
+                  "    pm.collectionVariables.set('accessToken', jsonData.data.accessToken);",
+                  "    console.log('✅ accessToken saved to collection variables');",
+                  "}",
+                  "",
+                  "if (jsonData.data && jsonData.data.refreshToken) {",
+                  "    pm.collectionVariables.set('refreshToken', jsonData.data.refreshToken);",
+                  "    console.log('✅ refreshToken saved to collection variables');",
+                  "}",
+                  "",
+                  "// Basic assertions",
+                  "pm.test('Login successful', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data.accessToken).to.be.a('string');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/refresh-token",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Uses the refreshToken cookie (set automatically by the Login response) to get a new accessToken."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const jsonData = pm.response.json();",
+                  "",
+                  "if (jsonData.data && jsonData.data.accessToken) {",
+                  "    pm.collectionVariables.set('accessToken', jsonData.data.accessToken);",
+                  "    console.log('✅ accessToken refreshed and saved');",
+                  "}",
+                  "",
+                  "pm.test('Token refreshed', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/logout",
+            "description": "Deletes the refresh token row and clears the accessToken/refreshToken cookies. Reads the refreshToken cookie set by Login — no Authorization header required."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const jsonData = pm.response.json();",
+                  "",
+                  "pm.test('Logged out', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "});",
+                  "",
+                  "// The server clears both cookies with the same attributes it set",
+                  "// them with, so the jar should come back empty for both names.",
+                  "pm.test('Auth cookies cleared', function () {",
+                  "    ['accessToken', 'refreshToken'].forEach(function (name) {",
+                  "        pm.expect(pm.cookies.has(name), name + ' cookie').to.be.false;",
+                  "    });",
+                  "});",
+                  "",
+                  "// Drop the saved tokens so later requests don't send a dead one",
+                  "pm.collectionVariables.set('accessToken', '');",
+                  "pm.collectionVariables.set('refreshToken', '');",
+                  "console.log('\\u2705 tokens cleared from collection variables');"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "description": "Profile management for the single owner account.",
+      "item": [
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/users/me",
+            "description": "Requires auth. Returns the logged-in user's profile."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Profile retrieved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/users/my-profile",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"John Updated\",\n    \"profilePhoto\": \"https://example.com/new-photo.jpg\",\n    \"bio\": \"Software Engineer and Writer\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requires auth. Updates the logged-in user's profile."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Profile updated', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Problems",
+      "description": "Capture problems from a LeetCode URL or create custom ones, then browse, filter, and edit the library. Capture is one endpoint discriminated on `source`.",
+      "item": [
+        {
+          "name": "Preview LeetCode Metadata",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/problems/preview",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"url\": \"https://leetcode.com/problems/valid-parentheses/\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Resolves title, difficulty, and topics for a LeetCode URL without saving anything. Responds 200 with the resolved metadata, or 422 (echoing the canonical URL) when the lookup fails. If the canonical URL is already saved, the response carries `existingProblemId` so the client can open it instead of creating a duplicate."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Metadata resolved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});",
+                  "",
+                  "// Already in the library? Keep the id so the follow-up",
+                  "// requests address the existing record instead of",
+                  "// creating a duplicate.",
+                  "const data = pm.response.json().data;",
+                  "if (data && data.existingProblemId) {",
+                  "    pm.collectionVariables.set('problemId', data.existingProblemId);",
+                  "    console.log('✅ problemId saved from existing record:', data.existingProblemId);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Problem — LeetCode (auto-resolved)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/problems",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"source\": \"LEETCODE\",\n    \"url\": \"https://leetcode.com/problems/two-sum/description/\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Canonicalizes the URL (query strings and trailing segments like /description or /solutions are discarded), resolves metadata from LeetCode, and saves. Responds 201 on create, or 200 with `alreadyExisted: true` when the canonical URL is already in the library. Saves `problemId`."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Request succeeded', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "const data = pm.response.json().data;",
+                  "if (data && data.id) {",
+                  "    pm.collectionVariables.set('problemId', data.id);",
+                  "    console.log('✅ problemId saved:', data.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Problem — LeetCode (manual metadata)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/problems",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"source\": \"LEETCODE\",\n    \"url\": \"https://leetcode.com/problems/lru-cache/\",\n    \"title\": \"LRU Cache\",\n    \"difficulty\": \"MEDIUM\",\n    \"topics\": [\n        \"Hash Table\",\n        \"Linked List\",\n        \"Design\"\n    ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "The fallback for when metadata resolution fails or returns 422: supply title, difficulty, and topics alongside the URL and no external lookup happens. The record is flagged `metadataEnteredManually: true`. `UNRATED` is not accepted for a LeetCode problem."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Request succeeded', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "const data = pm.response.json().data;",
+                  "if (data && data.id) {",
+                  "    pm.collectionVariables.set('problemId', data.id);",
+                  "    console.log('✅ problemId saved:', data.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Problem — Custom",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/problems",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"source\": \"CUSTOM\",\n    \"title\": \"Rotate a matrix in place\",\n    \"difficulty\": \"MEDIUM\",\n    \"topics\": [\n        \"array\",\n        \"matrix\"\n    ],\n    \"sourceName\": \"Cracking the Coding Interview\",\n    \"sourceUrl\": \"https://example.com/ch1\",\n    \"statement\": \"Rotate an N x N matrix 90 degrees clockwise without allocating a second matrix.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "A problem from an interview, course, book, or self-authored. Only `title` is required; difficulty defaults to `UNRATED`. `sourceUrl` must be an absolute http(s) URL. Custom problems are first-class: identical attempt, scheduling, dashboard, and insights behavior."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Request succeeded', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "const data = pm.response.json().data;",
+                  "if (data && data.id) {",
+                  "    pm.collectionVariables.set('problemId', data.id);",
+                  "    console.log('✅ problemId saved:', data.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Problems",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/problems?page=1&limit=20&sortBy=createdAt&sortOrder=desc",
+            "description": "Paginated library listing, newest-first by default. Meta carries page, limit, total, and totalPages."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Library listed', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Problems — Filtered",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/problems?source=LEETCODE&difficulty=MEDIUM,HARD&topic=array,graph&status=OVERDUE&solutionViewed=false&search=sum",
+            "description": "Filters combine conjunctively. `difficulty`, `status`, and `topic` accept comma-separated lists and match any supplied value. `status` accepts SCHEDULED, DUE, OVERDUE, MASTERED, NEEDS_REINFORCEMENT — the first three are evaluated against today in the owner timezone, and problems with no revision cycle are excluded. `search` is a case-insensitive title match. Sort over createdAt, title, difficulty, or nextDueAt."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Filtered listing', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Problem Detail",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/problems/{{problemId}}",
+            "description": "Full metadata, topics, current stage and due date, practice state, attempt history newest-first, revision event history, and the projected revision timeline (each stage marked completed / current / upcoming). For an unattempted problem the timeline is empty and `cycleStartsOnFirstAttempt` is true."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Detail retrieved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Problem",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/problems/{{problemId}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"Two Sum\",\n    \"difficulty\": \"EASY\",\n    \"topics\": [\n        \"array\",\n        \"hash-table\"\n    ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Corrects title, difficulty, topics, source name/URL, and statement. Supplying `topics` replaces the full set. Changing a LeetCode problem’s canonical URL is rejected with 400, as is `UNRATED` on a LeetCode problem. Editing never disturbs attempts or the revision schedule."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Problem updated', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Problem — Attribution and Statement",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/problems/{{problemId}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"sourceName\": \"Elements of Programming Interviews\",\n    \"sourceUrl\": \"https://example.com/epi/ch5\",\n    \"statement\": \"Given an array of integers, return indices of the two numbers such that they add up to a target.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "`sourceName`, `sourceUrl`, and `statement` are settable on any problem, not just custom ones. Send `null` for any of the three to clear it — omitting a field leaves it unchanged, so clearing has to be explicit. `sourceUrl` must still be an absolute http(s) URL when non-null."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Attribution updated', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Problem",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/problems/{{problemId}}",
+            "description": "Removes the problem along with its attempts, topic links, revision schedule, and revision history."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Problem deleted', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Attempts",
+      "description": "Logging an attempt is what drives the revision engine. Attempts are append-mostly; edit and delete are deliberate operations that replay the whole schedule.",
+      "item": [
+        {
+          "name": "Log Attempt",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/problems/{{problemId}}/attempts",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"outcome\": \"SOLVED_INDEPENDENTLY\",\n    \"durationMinutes\": 23,\n    \"confidence\": 4,\n    \"notes\": \"sliding window, forgot to shrink on duplicate\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Outcome is one of SOLVED_INDEPENDENTLY, SOLVED_WITH_HINT, VIEWED_SOLUTION. Duration is an integer 1–1440 minutes, confidence an integer 1–5, notes optional. `attemptedAt` defaults to now and may be backdated but not future-dated. The response carries the resulting stage and next due date. Saves `attemptId`."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Request succeeded', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([201]);",
+                  "});",
+                  "",
+                  "const data = pm.response.json().data;",
+                  "if (data && data.attempt.id) {",
+                  "    pm.collectionVariables.set('attemptId', data.attempt.id);",
+                  "    console.log('✅ attemptId saved:', data.attempt.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Log Attempt — Backdated",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/problems/{{problemId}}/attempts",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"outcome\": \"SOLVED_INDEPENDENTLY\",\n    \"durationMinutes\": 18,\n    \"confidence\": 4,\n    \"attemptedAt\": \"2026-08-01T09:30:00.000Z\",\n    \"notes\": \"logged a few days late\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Backfilling a session you forgot to log. `attemptedAt` is an ISO timestamp resolved to a local date in the owner timezone, so it is the local day — not the instant — that drives stage arithmetic. A future timestamp responds 400. Because the schedule is replayed from the full history, inserting an attempt earlier than existing ones produces the same result as if it had been logged in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Backdated attempt logged', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});",
+                  "",
+                  "const data = pm.response.json().data;",
+                  "if (data && data.attempt.id) {",
+                  "    pm.collectionVariables.set('attemptId', data.attempt.id);",
+                  "    console.log('✅ attemptId saved:', data.attempt.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Log Attempt — Viewed Solution",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/problems/{{problemId}}/attempts",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"outcome\": \"VIEWED_SOLUTION\",\n    \"durationMinutes\": 35,\n    \"confidence\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "A viewed solution resets the cycle to Day 0 at any stage, including after mastery, and permanently marks the problem `solutionViewed`."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Cycle reset to DAY_1', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    pm.expect(pm.response.json().data.currentStage).to.eql('DAY_1');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Attempts",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/problems/{{problemId}}/attempts?page=1&limit=20",
+            "description": "A problem’s attempt history, newest-first, with a meta block carrying page, limit, and total."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Attempts listed', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Attempt",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/attempts/{{attemptId}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"outcome\": \"SOLVED_WITH_HINT\",\n    \"confidence\": 3\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Correcting a mis-logged attempt. Changing outcome, confidence, or timestamp replays the problem’s schedule from its full attempt history rather than patching it, so the result equals what a fresh log would have produced."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Attempt updated', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Attempt",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/attempts/{{attemptId}}",
+            "description": "Removes the attempt and replays the schedule. Deleting a problem’s only attempt returns it to having no revision cycle."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Attempt deleted', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Revisions",
+      "description": "The Day 0/1/7/15/30 schedule and its audit trail. Every scheduling transition is recorded as a revision event.",
+      "item": [
+        {
+          "name": "Get Revision History",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/problems/{{problemId}}/revisions",
+            "description": "Revision events newest-first: CYCLE_STARTED, COMPLETED, ADVANCED, REPEATED, RESET, RESCHEDULED, MASTERED, REINFORCEMENT_STARTED — each with its stage, previous and new due dates, any reason, and a UTC timestamp."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('History retrieved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reschedule Revision",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/problems/{{problemId}}/revisions/reschedule",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"dueDate\": \"2026-09-01\",\n    \"reason\": \"travelling\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Moves the current stage’s due date without changing the stage. The reason is required (whitespace-only is rejected), and a date earlier than today in the owner timezone responds 400. The cycle anchor used for subsequent stages is left untouched, and a RESCHEDULED event records the change."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Revision rescheduled', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Topics",
+      "description": "The normalized topic vocabulary. Topics are created on demand when a problem is tagged — there is no create endpoint.",
+      "item": [
+        {
+          "name": "List Topics",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/topics",
+            "description": "Every topic with its problem count, most-used first. Unused topics are returned with a count of 0."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Topics listed', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Topics — Used Only",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/topics?usedOnly=true",
+            "description": "Excludes topics no longer linked to any problem."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Used topics listed', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Rename Topic",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/topics/{{topicId}}",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Dynamic Programming\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Renames a topic, re-deriving its slug. When the new name normalizes to an existing topic’s slug the two are merged: every link moves to the survivor, duplicates collapse to one, and the emptied record is deleted."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Topic renamed', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "description": "The one question the product answers every day.",
+      "item": [
+        {
+          "name": "Today",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/dashboard/today",
+            "description": "Due and overdue counts, the full ordered due list (most overdue first, then earliest due, then creation time), a recommended slice capped at five, the current practice streak, and a seven-day lookahead starting tomorrow with zero-count days included. All day boundaries use the owner timezone; mastered and never-attempted problems are excluded."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Dashboard retrieved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Insights",
+      "description": "Aggregates computed from stored attempts and revision events, so editing or deleting an attempt changes the reported figures.",
+      "item": [
+        {
+          "name": "Summary",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/insights/summary",
+            "description": "Problems added, attempted, solved independently, and mastered; the revision completion rate with its numerator and denominator (null rate when nothing has come due); and average solve time split into first-attempt and revision buckets with sample counts."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Summary retrieved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Summary — Ranged",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/insights/summary?from=2026-01-01&to=2026-12-31",
+            "description": "The same figures over a local date range. A start later than the end, malformed dates, or a range beyond the configured maximum all respond 400."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Ranged summary retrieved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Topics",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/insights/topics",
+            "description": "Per-topic problem count, attempt count, independent-solve rate, average confidence, and average solve time, plus a weak-topics list ordered worst-first. A topic below the configured minimum attempt count is reported with its figures but never flagged weak."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Topic insights retrieved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Activity",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/insights/activity?from=2026-01-01&to=2026-08-06",
+            "description": "One entry per local date with its attempt count, suitable for a calendar heatmap. Days with no activity are present with a count of 0. Defaults to the trailing 365 days."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Activity retrieved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Backlog",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/insights/backlog?from=2026-07-08&to=2026-08-06",
+            "description": "The current overdue count plus a trend series giving the overdue count as at the end of each local day, so backlog growth or reduction is visible. Defaults to the trailing 30 days."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Backlog retrieved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Settings",
+      "description": "The single owner’s timezone, notification toggle, and reminder time. The record is created with defaults on first read.",
+      "item": [
+        {
+          "name": "Get Settings",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/settings",
+            "description": "Creates the record on demand with timezone `UTC`, notifications disabled, and reminder time `20:00` if it does not yet exist."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Settings retrieved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Settings",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/settings",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"timezone\": \"Asia/Dhaka\",\n    \"notificationsEnabled\": true,\n    \"reminderTime\": \"20:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Accepts any subset of the settable fields; unsupplied fields are unchanged and an empty body is rejected with 400. The timezone must be a valid IANA identifier and governs every local-day computation in the product, taking effect immediately with no data migration. Reminder time is 24-hour `HH:mm`."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Settings updated', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reminders",
+      "description": "Server-computed reminder state the client polls while the app is open. There is no scheduler and no server-initiated push — closed-browser delivery is out of scope per PRD §6.8.",
+      "item": [
+        {
+          "name": "Current Reminder",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/reminders/current",
+            "description": "Reports `active`, `dueTomorrow`, `dueToday`, `overdueToday`, `reminderTime`, `timezone`, `acknowledged`, the local date it applies to, and a ready-to-render notification title, body, and target path. A reminder becomes active when notifications are enabled, the local time is at or after the reminder time, and at least one problem falls due on the next local date — and stays active for the rest of that local day."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Reminder state retrieved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Acknowledge Reminder",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/reminders/acknowledge",
+            "description": "Marks today’s reminder acknowledged so the client does not re-raise a notification or banner for the same day. The acknowledgement is stored as a local date, so it resets by itself when the local date rolls over. Acknowledging while nothing is active responds 200 and leaves the state unchanged."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Reminder acknowledged', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

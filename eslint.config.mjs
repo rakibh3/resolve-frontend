@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored source from the @bklit shadcn registry. It lives in the repo so
+    // the charts can be themed and upgraded deliberately, but it is upstream
+    // code — linting it produces noise we cannot act on without diverging from
+    // the registry. Our own chart usage lives in app/**/_components.
+    "components/charts/**",
   ]),
 ]);
 

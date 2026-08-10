@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ReSolve — frontend
 
-## Getting Started
+The web client for ReSolve, a single-owner spaced-repetition tracker for coding
+problems. Built on Next.js 16 (App Router), React 19, Tailwind v4, and shadcn
+components in the `base-nova` style.
 
-First, run the development server:
+## Architecture in one paragraph
+
+Every read happens in a Server Component; every write happens in a Server
+Action. There is no client-side data layer. The ReSolve API issues its own
+session cookies as `SameSite=None; Secure=false`, which browsers reject, and its
+CORS allowlist is a single origin — so the browser cannot talk to the API at
+all. Instead, `proxy.ts` keeps a first-party session in `httpOnly` cookies and
+`lib/api/http.ts` (marked `server-only`) attaches the access token to every
+outbound request.
+
+## Setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
+cp .env.example .env.local   # then set API_BASE_URL
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Environment
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Variable | Scope | Description |
+| --- | --- | --- |
+| `API_BASE_URL` | **server-only** | Base URL of the ReSolve API including the `/api` prefix, e.g. `http://localhost:6000/api`. Never prefix it with `NEXT_PUBLIC_` — that would ship the API origin to the browser and invite calls that CORS will reject anyway. |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Backend prerequisites
 
-## Learn More
+1. **`APP_URL` on the API must equal this app's origin** (`http://localhost:3000`
+   in development). The API's CORS allowlist is exactly that one origin.
+2. **Seed the owner account** on the API (`bun run seed`). ReSolve is
+   single-user by design and has no registration endpoint, so there is no way to
+   create the account from this app.
 
-To learn more about Next.js, take a look at the following resources:
+## Scripts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Command | Description |
+| --- | --- |
+| `pnpm dev` | Development server |
+| `pnpm build` | Production build |
+| `pnpm start` | Serve the production build |
+| `pnpm lint` | ESLint |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Reference
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `docs/API_INTEGRATION.md` — the authoritative API contract, including the
+  gotchas checklist this app is built against.
+- `openspec/changes/build-resolve-frontend/` — the proposal, capability specs,
+  design decisions, and task breakdown behind this implementation.
