@@ -15,7 +15,7 @@ export default function DashboardPage() {
     <RouteTransition>
       <div className="flex flex-col gap-6">
         {/* The heading paints immediately; the data streams in behind it. */}
-        <h1 className="font-heading text-2xl font-semibold tracking-tight">
+        <h1 className="font-heading text-2xl font-extrabold tracking-tight">
           Today
         </h1>
 

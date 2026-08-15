@@ -53,15 +53,15 @@ function CounterCard({
     <FadeInUp
       index={index}
       className={cn(
-        "flex items-center gap-4 rounded-xl border p-4",
+        "flex items-center gap-5 rounded-none border-2 p-5 shadow-[var(--shadow-neo)]",
         urgent
-          ? "border-state-overdue-foreground/25 bg-state-overdue/60"
-          : "border-border bg-card",
+          ? "border-state-overdue-foreground bg-state-overdue/60"
+          : "border-foreground bg-card",
       )}
     >
       <span
         className={cn(
-          "flex size-10 shrink-0 items-center justify-center rounded-lg",
+          "flex size-10 shrink-0 items-center justify-center rounded-none",
           urgent
             ? "bg-state-overdue text-state-overdue-foreground"
             : "bg-muted text-muted-foreground",

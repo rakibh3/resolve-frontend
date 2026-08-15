@@ -29,7 +29,7 @@ export function DueList({
   return (
     <section className="flex flex-col gap-3">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="font-heading text-lg font-semibold tracking-tight">
+        <h2 className="font-heading text-lg font-bold tracking-tight">
           Suggested for today
         </h2>
         <p className="text-sm text-muted-foreground">
@@ -54,12 +54,12 @@ export function DueList({
       </ul>
 
       {rest.length > 0 && (
-        <details className="group rounded-xl border border-border bg-card/50">
-          <summary className="interactive-lift cursor-pointer list-none px-4 py-3 text-sm font-medium focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none">
+        <details className="group rounded-none border-2 border-foreground bg-card/50 shadow-[var(--shadow-neo)]">
+          <summary className="interactive-press cursor-pointer list-none px-5 py-4 text-sm font-bold focus-visible:outline-2 focus-visible:outline-foreground focus-visible:outline-offset-2">
             Show the remaining {rest.length}{" "}
             {rest.length === 1 ? "problem" : "problems"} due
           </summary>
-          <ul className="grid gap-3 border-t border-border p-4 md:grid-cols-2">
+          <ul className="grid gap-3 border-t-2 border-foreground p-5 md:grid-cols-2">
             {rest.map((item) => (
               <li key={item.id}>
                 <DueProblemCard item={item} timezone={timezone} />

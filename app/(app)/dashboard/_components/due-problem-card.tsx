@@ -25,7 +25,7 @@ export function DueProblemCard({
   timezone: string
 }) {
   return (
-    <article className="interactive-lift group flex flex-col gap-3 rounded-xl border border-border bg-card p-4 has-focus-visible:ring-3 has-focus-visible:ring-ring/50">
+    <article className="interactive-press group flex flex-col gap-3 rounded-none border-2 border-foreground bg-card p-5 has-focus-visible:outline-2 has-focus-visible:outline-foreground has-focus-visible:outline-offset-2 shadow-[var(--shadow-neo)]">
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
           <Link

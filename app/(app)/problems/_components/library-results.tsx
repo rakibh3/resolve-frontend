@@ -37,7 +37,7 @@ export async function LibraryResults({
   return (
     <ResultsShell>
       <div className="flex flex-col gap-4">
-        <div className="overflow-hidden rounded-xl border border-border bg-card">
+        <div className="overflow-hidden rounded-none border-2 border-foreground bg-card shadow-[var(--shadow-neo)]">
           {rows.map((problem) => (
             <LibraryProblemRow key={problem.id} problem={problem} />
           ))}

@@ -20,11 +20,11 @@ export function PrimaryNav({ className }: { className?: string }) {
                 href={href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "interactive-lift flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm font-medium",
-                  "focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
+                  "interactive-press flex items-center gap-2 rounded-none px-2.5 py-1.5 text-sm font-bold uppercase tracking-wider border-2",
+                  "focus-visible:outline-2 focus-visible:outline-foreground focus-visible:outline-offset-2",
                   active
-                    ? "bg-muted text-foreground"
-                    : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                    ? "bg-foreground text-background border-foreground shadow-[var(--shadow-neo-sm)]"
+                    : "border-transparent text-foreground hover:border-foreground",
                 )}
               >
                 <Icon className="size-4" aria-hidden />

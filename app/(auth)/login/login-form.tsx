@@ -19,7 +19,7 @@ export function LoginForm() {
   const [state, formAction, pending] = useActionState(login, initialState)
 
   return (
-    <form action={formAction} className="flex flex-col gap-6">
+    <form action={formAction} className="flex flex-col gap-6 border-2 border-foreground p-6 bg-card shadow-[var(--shadow-neo-lg)]">
       <FieldGroup>
         <Field>
           <FieldLabel htmlFor="email">Email</FieldLabel>
@@ -70,7 +70,7 @@ export function LoginForm() {
         <p
           role="alert"
           aria-live="polite"
-          className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+          className="rounded-none border-2 border-destructive bg-destructive/10 px-3 py-2 text-sm text-destructive font-bold"
         >
           {state.message}
         </p>

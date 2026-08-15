@@ -37,9 +37,9 @@ export function VocabularyInsightCard({
   emptyState: React.ReactNode
 }) {
   return (
-    <section className="flex flex-col gap-4 rounded-xl border border-border bg-card p-4">
+    <section className="flex flex-col gap-4 rounded-none border-2 border-foreground bg-card p-5 shadow-[var(--shadow-neo)]">
       <div className="flex flex-col gap-1">
-        <h2 className="font-heading text-lg font-semibold tracking-tight">
+        <h2 className="font-heading text-lg font-bold tracking-tight">
           {title}
         </h2>
         <p className="text-sm text-muted-foreground">
@@ -57,7 +57,7 @@ export function VocabularyInsightCard({
       {entries.length === 0 ? (
         emptyState
       ) : weakEntries.length === 0 ? (
-        <div className="flex items-start gap-3 rounded-lg border border-state-mastered-foreground/20 bg-state-mastered/40 p-4">
+        <div className="flex items-start gap-3 rounded-none border-2 border-foreground bg-state-mastered/40 p-5 shadow-[var(--shadow-neo-sm)]">
           <SproutIcon
             className="mt-0.5 size-4 shrink-0 text-state-mastered-foreground"
             aria-hidden

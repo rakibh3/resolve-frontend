@@ -27,7 +27,7 @@ export async function WeakPatternsCard() {
       thresholds={insights.thresholds}
       hrefFor={(slug) => `/problems?pattern=${slug}`}
       emptyState={
-        <div className="flex flex-col items-start gap-3 rounded-lg border border-dashed border-border p-4">
+        <div className="flex flex-col items-start gap-3 rounded-none border-2 border-dashed border-foreground p-5 shadow-[var(--shadow-neo-sm)]">
           <p className="max-w-prose text-sm text-muted-foreground">
             No patterns yet. Unlike topics, these are not imported — a pattern
             appears the first time you name one on a recall card, and this card

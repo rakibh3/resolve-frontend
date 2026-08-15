@@ -116,7 +116,7 @@ function ResultCard({
   return (
     <FadeInUp
       index={index}
-      className="interactive-lift flex flex-col gap-3 rounded-xl border border-border bg-card p-4 has-focus-visible:ring-3 has-focus-visible:ring-ring/50"
+      className="interactive-press flex flex-col gap-3 rounded-none border-2 border-foreground bg-card p-5 has-focus-visible:outline-2 has-focus-visible:outline-foreground has-focus-visible:outline-offset-2 shadow-[var(--shadow-neo)]"
     >
       <div className="flex flex-wrap items-center gap-2">
         <Link

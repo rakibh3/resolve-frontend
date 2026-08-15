@@ -36,7 +36,7 @@ export async function TopicList({ usedOnly }: { usedOnly: boolean }) {
         <li key={topic.id}>
           <FadeInUp
             index={index}
-            className="interactive-lift flex items-center gap-3 border-b border-border px-4 py-3 last:border-b-0 has-focus-visible:ring-3 has-focus-visible:ring-ring/50"
+            className="interactive-press flex items-center gap-3 border-b-2 border-foreground px-4 py-3 last:border-b-0 has-focus-visible:outline-2 has-focus-visible:outline-foreground has-focus-visible:outline-offset-2"
           >
             <Link
               // Filter by slug; display the name.

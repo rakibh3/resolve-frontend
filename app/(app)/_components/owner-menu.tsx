@@ -41,7 +41,7 @@ export function OwnerMenu({ owner }: { owner: OwnerSummary | null }) {
       >
         <span
           aria-hidden
-          className="flex size-6 items-center justify-center rounded-full bg-muted text-[0.65rem] font-semibold text-foreground"
+          className="flex size-6 items-center justify-center rounded-none border-2 border-foreground bg-muted text-[0.65rem] font-bold uppercase tracking-wider text-foreground"
         >
           {owner ? owner.initials : <UserIcon className="size-3.5" />}
         </span>

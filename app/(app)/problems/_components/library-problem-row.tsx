@@ -17,7 +17,7 @@ import { formatLocalDate } from "@/lib/date"
  */
 export function LibraryProblemRow({ problem }: { problem: Problem }) {
   return (
-    <article className="interactive-lift flex flex-col gap-2 border-b border-border px-4 py-3 last:border-b-0 has-focus-visible:ring-3 has-focus-visible:ring-ring/50 sm:flex-row sm:items-center sm:gap-4">
+    <article className="interactive-press flex flex-col gap-2 border-b-2 border-foreground px-4 py-3 last:border-b-0 has-focus-visible:outline-2 has-focus-visible:outline-foreground has-focus-visible:outline-offset-2 sm:flex-row sm:items-center sm:gap-4">
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <div className="flex items-center gap-2">
           <Link

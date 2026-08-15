@@ -11,23 +11,23 @@ export function TodaySkeleton() {
       <Skeleton className="h-5 w-56" />
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <Skeleton className="h-[86px] rounded-xl" />
-        <Skeleton className="h-[86px] rounded-xl" />
+        <Skeleton className="h-[86px] rounded-none" />
+        <Skeleton className="h-[86px] rounded-none" />
       </div>
 
-      <Skeleton className="h-[116px] rounded-xl" />
+      <Skeleton className="h-[116px] rounded-none" />
 
       <div className="flex flex-col gap-3">
         <Skeleton className="h-7 w-48" />
         <div className="grid gap-3 md:grid-cols-2">
-          <Skeleton className="h-[168px] rounded-xl" />
-          <Skeleton className="h-[168px] rounded-xl" />
-          <Skeleton className="h-[168px] rounded-xl" />
-          <Skeleton className="h-[168px] rounded-xl" />
+          <Skeleton className="h-[168px] rounded-none" />
+          <Skeleton className="h-[168px] rounded-none" />
+          <Skeleton className="h-[168px] rounded-none" />
+          <Skeleton className="h-[168px] rounded-none" />
         </div>
       </div>
 
-      <Skeleton className="h-[280px] rounded-xl" />
+      <Skeleton className="h-[280px] rounded-none" />
     </div>
   )
 }
