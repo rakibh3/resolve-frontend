@@ -21,13 +21,13 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
         <ReminderBanner />
       </Suspense>
 
-      <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur">
+      <header className="sticky top-0 z-40 border-b-2 border-foreground bg-background">
         <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-3 px-4 sm:px-6">
           <MobileNav />
 
           <Link
             href="/dashboard"
-            className="font-heading text-sm font-semibold tracking-tight focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+            className="font-heading text-sm font-semibold tracking-tight focus-visible:outline-2 focus-visible:outline-foreground focus-visible:outline-offset-2"
           >
             ReSolve
           </Link>
@@ -72,7 +72,7 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
 
             <ThemeToggle />
 
-            <Suspense fallback={<Skeleton className="size-7 rounded-lg" />}>
+            <Suspense fallback={<Skeleton className="size-7 rounded-none" />}>
               <OwnerSlot />
             </Suspense>
           </div>

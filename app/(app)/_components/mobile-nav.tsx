@@ -47,13 +47,13 @@ export function MobileNav() {
         <MenuIcon aria-hidden />
       </SheetTrigger>
 
-      <SheetContent side="left" className="w-72">
+      <SheetContent side="left" className="w-72 border-r-2 border-foreground">
         <SheetHeader>
           <SheetTitle>Navigation</SheetTitle>
         </SheetHeader>
 
         <nav aria-label="Primary" className="flex flex-col gap-4 px-4 pb-6">
-          <ul className="flex flex-col gap-1">
+          <ul className="flex flex-col divide-y-2 divide-foreground border-y-2 border-foreground">
             {NAV_ITEMS.map((item) => (
               <DrawerLink
                 key={item.href}
@@ -71,7 +71,7 @@ export function MobileNav() {
             <h3 className="px-3 text-xs font-medium text-muted-foreground uppercase">
               Vocabulary
             </h3>
-            <ul className="flex flex-col gap-1">
+            <ul className="flex flex-col divide-y-2 divide-foreground border-y-2 border-foreground">
               {SECONDARY_NAV_ITEMS.map((item) => (
                 <DrawerLink
                   key={item.href}
@@ -110,11 +110,11 @@ function DrawerLink({
         className={cn(
           // min-h-11 keeps every row past the 44px touch target, which the
           // two-line variant clears anyway but the one-line one would not.
-          "flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium",
-          "focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
+          "flex min-h-11 items-center gap-3 rounded-none px-3 py-2 text-sm font-bold uppercase tracking-wider",
+          "focus-visible:outline-2 focus-visible:outline-foreground focus-visible:outline-offset-2",
           active
-            ? "bg-muted text-foreground"
-            : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+            ? "bg-foreground text-background"
+            : "text-foreground hover:bg-muted/60 hover:text-foreground",
         )}
       >
         <Icon className="size-4 shrink-0" aria-hidden />

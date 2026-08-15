@@ -39,7 +39,7 @@ export async function ReminderBanner() {
     <div
       role="status"
       aria-live="polite"
-      className="animate-fade-in-up border-b border-warning/40 bg-warning/50"
+      className="animate-fade-in-up border-b-2 border-foreground bg-warning"
     >
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <div className="flex flex-col gap-0.5">

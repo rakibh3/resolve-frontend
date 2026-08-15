@@ -30,7 +30,7 @@ export async function RecallSheet({
     // recoverable, and worth explaining rather than throwing to the boundary.
     if (error instanceof ApiError && error.isValidationError) {
       return (
-        <div className="flex flex-col items-start gap-2 rounded-xl border border-dashed border-destructive/40 p-6">
+        <div className="flex flex-col items-start gap-2 rounded-none border-2 border-dashed border-destructive p-6 shadow-[var(--shadow-neo)]">
           <h2 className="font-heading text-lg font-semibold tracking-tight">
             Those filters aren&rsquo;t valid
           </h2>
@@ -70,7 +70,7 @@ export async function RecallSheet({
         {sheet.truncated && (
           <p
             role="status"
-            className="flex items-start gap-1.5 rounded-lg border border-warning/40 bg-warning/40 px-2.5 py-1.5 text-xs text-warning-foreground"
+            className="flex items-start gap-1.5 rounded-none border-2 border-warning bg-warning/40 px-2.5 py-1.5 text-xs text-warning-foreground"
           >
             <TriangleAlertIcon className="mt-px size-3 shrink-0" aria-hidden />
             The scan hit its cap, so this is not every card you have written.
@@ -101,7 +101,7 @@ function PatternGroup({
   return (
     <FadeInUp
       index={index}
-      className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4"
+      className="flex flex-col gap-3 rounded-none border-2 border-foreground bg-card p-5 shadow-[var(--shadow-neo)]"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="flex items-center gap-2 font-heading text-lg font-semibold tracking-tight">
@@ -109,7 +109,7 @@ function PatternGroup({
             // Only a real pattern has a page to link to.
             <Link
               href={`/problems?pattern=${group.slug}`}
-              className="hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+              className="hover:underline focus-visible:outline-2 focus-visible:outline-foreground focus-visible:outline-offset-2"
             >
               {group.name}
             </Link>
@@ -144,7 +144,7 @@ function CardRow({ card }: { card: RecallSheetEntry }) {
         <Link
           href={`/problems/${card.problemId}`}
           transitionTypes={["nav-forward"]}
-          className="font-medium tracking-tight hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+          className="font-medium tracking-tight hover:underline focus-visible:outline-2 focus-visible:outline-foreground focus-visible:outline-offset-2"
         >
           {card.title}
         </Link>
@@ -175,8 +175,8 @@ function CardRow({ card }: { card: RecallSheetEntry }) {
 
 function NothingWritten() {
   return (
-    <div className="flex flex-col items-start gap-3 rounded-xl border border-dashed border-border p-8">
-      <span className="flex size-10 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+    <div className="flex flex-col items-start gap-3 rounded-none border-2 border-dashed border-foreground p-8 shadow-[var(--shadow-neo)]">
+      <span className="flex size-10 items-center justify-center rounded-none bg-muted text-muted-foreground">
         <BookOpenIcon className="size-5" aria-hidden />
       </span>
       <h2 className="font-heading text-lg font-semibold tracking-tight">
@@ -200,7 +200,7 @@ function NothingWritten() {
 
 function NoMatches() {
   return (
-    <div className="flex flex-col items-start gap-3 rounded-xl border border-dashed border-border p-8">
+    <div className="flex flex-col items-start gap-3 rounded-none border-2 border-dashed border-foreground p-8 shadow-[var(--shadow-neo)]">
       <h2 className="font-heading text-lg font-semibold tracking-tight">
         No cards match these filters
       </h2>

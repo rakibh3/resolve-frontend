@@ -21,9 +21,9 @@ export async function ActivityCard({ range }: { range: InsightsRange }) {
   }
 
   return (
-    <section className="flex flex-col gap-4 rounded-xl border border-border bg-card p-4">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="font-heading text-lg font-semibold tracking-tight">
+    <section className="flex flex-col gap-4 rounded-none border-2 border-foreground bg-card p-5 shadow-[var(--shadow-neo)]">
+      <div className="flex flex-col gap-1">
+        <h2 className="font-heading text-lg font-bold tracking-tight">
           Activity
         </h2>
         <p className="text-sm text-muted-foreground">
@@ -60,7 +60,7 @@ export async function ActivityCard({ range }: { range: InsightsRange }) {
                 title={`${localDateWeekday(day.date, "long")} ${formatLocalDate(day.date, "long")} — ${day.count} ${day.count === 1 ? "attempt" : "attempts"}`}
                 className={cn(
                   "aspect-square w-full rounded-[3px] transition-transform",
-                  "focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none",
+                  "focus-visible:outline-2 focus-visible:outline-foreground focus-visible:outline-offset-2",
                   day.count === 0 && "bg-muted",
                 )}
                 style={

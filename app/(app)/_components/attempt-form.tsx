@@ -104,7 +104,7 @@ export function AttemptForm({
               <label
                 key={option.value}
                 className={cn(
-                  "interactive-lift flex cursor-pointer flex-col gap-1 rounded-lg border p-3 text-left",
+                  "interactive-press flex cursor-pointer flex-col gap-1 rounded-none border-2 border-foreground p-3 text-left shadow-[var(--shadow-neo-sm)]",
                   "has-focus-visible:ring-3 has-focus-visible:ring-ring/50",
                   outcome === option.value
                     ? "border-primary/40 bg-primary/5"

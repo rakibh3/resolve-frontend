@@ -19,5 +19,5 @@ export function stageLabel(stage: RevisionStage | null): string {
 }
 
 export function StageLabel({ stage }: { stage: RevisionStage | null }) {
-  return <span className="tabular-nums">{stageLabel(stage)}</span>
+  return <span className="tabular-nums font-bold border-2 border-foreground px-1 uppercase tracking-wider text-xs">{stageLabel(stage)}</span>
 }

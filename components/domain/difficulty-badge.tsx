@@ -40,7 +40,7 @@ export function DifficultyBadge({
     <Badge className={cn(tone, className)}>
       <span
         aria-hidden
-        className="size-1.5 rounded-full bg-current opacity-70"
+        className="size-1.5 rounded-none bg-current opacity-70"
       />
       {label}
     </Badge>

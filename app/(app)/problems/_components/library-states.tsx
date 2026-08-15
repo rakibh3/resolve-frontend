@@ -10,8 +10,8 @@ import { useFilters } from "./filter-provider"
 /** The library has nothing in it yet — an onboarding moment, not a failure. */
 export function EmptyLibrary() {
   return (
-    <div className="flex flex-col items-start gap-3 rounded-xl border border-dashed border-border p-8">
-      <span className="flex size-10 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+    <div className="flex flex-col items-start gap-3 rounded-none border-2 border-dashed border-foreground p-8 shadow-[var(--shadow-neo)]">
+      <span className="flex size-10 items-center justify-center rounded-none bg-muted text-muted-foreground">
         <LibraryIcon className="size-5" aria-hidden />
       </span>
       <h2 className="font-heading text-lg font-semibold tracking-tight">
@@ -34,8 +34,8 @@ export function NoMatches() {
   const filters = useFilters()
 
   return (
-    <div className="flex flex-col items-start gap-3 rounded-xl border border-dashed border-border p-8">
-      <span className="flex size-10 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+    <div className="flex flex-col items-start gap-3 rounded-none border-2 border-dashed border-foreground p-8 shadow-[var(--shadow-neo)]">
+      <span className="flex size-10 items-center justify-center rounded-none bg-muted text-muted-foreground">
         <FilterXIcon className="size-5" aria-hidden />
       </span>
       <h2 className="font-heading text-lg font-semibold tracking-tight">
@@ -58,8 +58,8 @@ export function InvalidFilters({ message }: { message: string }) {
   const filters = useFilters()
 
   return (
-    <div className="flex flex-col items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-8">
-      <span className="flex size-10 items-center justify-center rounded-lg bg-destructive/10 text-destructive">
+    <div className="flex flex-col items-start gap-3 rounded-none border-2 border-destructive bg-destructive/5 p-8 shadow-[var(--shadow-neo)]">
+      <span className="flex size-10 items-center justify-center rounded-none bg-destructive/10 text-destructive">
         <TriangleAlertIcon className="size-5" aria-hidden />
       </span>
       <h2 className="font-heading text-lg font-semibold tracking-tight">

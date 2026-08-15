@@ -39,13 +39,13 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+  --radius-4xl: 0px;
 
   /* Practice states — derived server-side, never recomputed here. */
   --color-state-scheduled: var(--state-scheduled);
@@ -117,42 +117,41 @@
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  /* Series palette. Sequential in lightness so multi-series charts stay
-     distinguishable without relying on hue alone. */
-  --chart-1: oklch(0.55 0.19 258);
-  --chart-2: oklch(0.62 0.16 185);
-  --chart-3: oklch(0.65 0.17 60);
-  --chart-4: oklch(0.55 0.2 315);
-  --chart-5: oklch(0.6 0.19 25);
-  --radius: 0.625rem;
+  --border: oklch(0.145 0 0);
+  --input: oklch(0.145 0 0);
+  --ring: oklch(0.145 0 0);
+  /* Series palette — neo-brutalist: high-contrast, punchy solid fills. */
+  --chart-1: oklch(0.50 0.24 258);
+  --chart-2: oklch(0.58 0.20 185);
+  --chart-3: oklch(0.70 0.20 90);
+  --chart-4: oklch(0.50 0.24 315);
+  --chart-5: oklch(0.55 0.22 25);
+  --radius: 0px;
 
-  /* Practice states. Every pair is AA against its own surface. */
-  --state-scheduled: oklch(0.94 0.02 258);
-  --state-scheduled-foreground: oklch(0.42 0.13 258);
-  --state-due: oklch(0.95 0.05 85);
-  --state-due-foreground: oklch(0.42 0.11 65);
-  --state-overdue: oklch(0.94 0.04 25);
-  --state-overdue-foreground: oklch(0.45 0.19 25);
-  --state-mastered: oklch(0.94 0.05 155);
-  --state-mastered-foreground: oklch(0.4 0.12 155);
-  --state-reinforcement: oklch(0.94 0.04 305);
-  --state-reinforcement-foreground: oklch(0.43 0.15 305);
+  /* Practice states — neo-brutalist: bold, high-chroma fills. AA on surface. */
+  --state-scheduled: oklch(0.82 0.12 240);
+  --state-scheduled-foreground: oklch(0.25 0.08 240);
+  --state-due: oklch(0.90 0.16 90);
+  --state-due-foreground: oklch(0.30 0.10 80);
+  --state-overdue: oklch(0.75 0.18 25);
+  --state-overdue-foreground: oklch(0.20 0.05 25);
+  --state-mastered: oklch(0.82 0.18 150);
+  --state-mastered-foreground: oklch(0.22 0.08 150);
+  --state-reinforcement: oklch(0.80 0.16 310);
+  --state-reinforcement-foreground: oklch(0.25 0.10 310);
   /* Never attempted — no revision cycle yet. */
-  --state-idle: oklch(0.96 0 0);
-  --state-idle-foreground: oklch(0.44 0 0);
+  --state-idle: oklch(0.92 0 0);
+  --state-idle-foreground: oklch(0.30 0 0);
 
-  /* Difficulties. */
-  --difficulty-easy: oklch(0.94 0.05 160);
-  --difficulty-easy-foreground: oklch(0.4 0.12 160);
-  --difficulty-medium: oklch(0.95 0.06 80);
-  --difficulty-medium-foreground: oklch(0.43 0.12 62);
-  --difficulty-hard: oklch(0.94 0.04 20);
-  --difficulty-hard-foreground: oklch(0.45 0.19 20);
-  --difficulty-unrated: oklch(0.96 0 0);
-  --difficulty-unrated-foreground: oklch(0.44 0 0);
+  /* Difficulties — high-chroma fills with dark foreground text. */
+  --difficulty-easy: oklch(0.82 0.18 155);
+  --difficulty-easy-foreground: oklch(0.22 0.08 155);
+  --difficulty-medium: oklch(0.88 0.17 85);
+  --difficulty-medium-foreground: oklch(0.30 0.10 70);
+  --difficulty-hard: oklch(0.75 0.18 25);
+  --difficulty-hard-foreground: oklch(0.22 0.06 25);
+  --difficulty-unrated: oklch(0.92 0 0);
+  --difficulty-unrated-foreground: oklch(0.30 0 0);
 
   --success: oklch(0.94 0.05 155);
   --success-foreground: oklch(0.4 0.12 155);
@@ -168,26 +167,26 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
   --chart-background: oklch(1 0 0);
-  --chart-foreground: oklch(0.145 0.004 285);
-  --chart-foreground-muted: oklch(0.55 0.014 260);
+  --chart-foreground: oklch(0.145 0 0);
+  --chart-foreground-muted: oklch(0.45 0 0);
   --chart-line-primary: var(--chart-1);
   --chart-line-secondary: var(--chart-2);
-  --chart-crosshair: oklch(0.4 0.1828 274.34);
-  --chart-grid: oklch(0.9 0 0);
+  --chart-crosshair: oklch(0.145 0 0);
+  --chart-grid: oklch(0.80 0 0);
   --chart-brush-border: var(--chart-grid);
-  --chart-tooltip-background: oklch(0.21 0.006 285 / 0.8);
+  --chart-tooltip-background: oklch(0.145 0 0 / 0.92);
   --chart-tooltip-foreground: oklch(0.985 0 0);
-  --chart-tooltip-muted: oklch(0.65 0.01 260);
-  --chart-marker-background: oklch(0.97 0.005 260);
-  --chart-marker-border: oklch(0.85 0.01 260);
-  --chart-marker-foreground: oklch(0.3 0.01 260);
-  --chart-label: oklch(0.45 0.01 260);
-  --chart-scale-01: oklch(0.98 0.003 106);
-  --chart-scale-02: oklch(0.92 0.008 106);
-  --chart-scale-03: oklch(0.82 0.015 106);
-  --chart-scale-04: oklch(0.68 0.02 106);
-  --chart-scale-05: oklch(0.55 0.025 106);
-  --chart-scale-pattern-color: oklch(0.96 0.005 106);
+  --chart-tooltip-muted: oklch(0.65 0 0);
+  --chart-marker-background: oklch(0.97 0 0);
+  --chart-marker-border: oklch(0.145 0 0);
+  --chart-marker-foreground: oklch(0.145 0 0);
+  --chart-label: oklch(0.35 0 0);
+  --chart-scale-01: oklch(0.96 0.005 90);
+  --chart-scale-02: oklch(0.88 0.01 90);
+  --chart-scale-03: oklch(0.76 0.02 90);
+  --chart-scale-04: oklch(0.62 0.03 90);
+  --chart-scale-05: oklch(0.50 0.04 90);
+  --chart-scale-pattern-color: oklch(0.92 0.008 90);
 }
 
 .dark {
@@ -206,38 +205,37 @@
   --accent: oklch(0.269 0 0);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.7 0.16 258);
-  --chart-2: oklch(0.75 0.14 185);
-  --chart-3: oklch(0.78 0.15 70);
-  --chart-4: oklch(0.7 0.17 315);
-  --chart-5: oklch(0.7 0.17 25);
+  --border: oklch(0.985 0 0);
+  --input: oklch(0.985 0 0);
+  --ring: oklch(0.985 0 0);
+  --chart-1: oklch(0.65 0.20 258);
+  --chart-2: oklch(0.70 0.18 185);
+  --chart-3: oklch(0.80 0.18 90);
+  --chart-4: oklch(0.65 0.20 315);
+  --chart-5: oklch(0.70 0.20 25);
 
-  /* Practice states, dark. Muted surfaces with bright foregrounds so the
-     badges read as labels rather than as alerts. */
-  --state-scheduled: oklch(0.3 0.05 258);
-  --state-scheduled-foreground: oklch(0.83 0.1 258);
-  --state-due: oklch(0.32 0.06 75);
-  --state-due-foreground: oklch(0.87 0.13 85);
-  --state-overdue: oklch(0.32 0.08 25);
-  --state-overdue-foreground: oklch(0.83 0.13 25);
-  --state-mastered: oklch(0.3 0.06 155);
-  --state-mastered-foreground: oklch(0.84 0.13 155);
-  --state-reinforcement: oklch(0.31 0.07 305);
-  --state-reinforcement-foreground: oklch(0.85 0.11 305);
-  --state-idle: oklch(0.28 0 0);
-  --state-idle-foreground: oklch(0.78 0 0);
+  /* Practice states, dark — bold high-chroma surfaces with light text. */
+  --state-scheduled: oklch(0.38 0.12 240);
+  --state-scheduled-foreground: oklch(0.92 0.04 240);
+  --state-due: oklch(0.45 0.14 85);
+  --state-due-foreground: oklch(0.95 0.04 85);
+  --state-overdue: oklch(0.40 0.16 25);
+  --state-overdue-foreground: oklch(0.92 0.04 25);
+  --state-mastered: oklch(0.38 0.14 150);
+  --state-mastered-foreground: oklch(0.92 0.04 150);
+  --state-reinforcement: oklch(0.38 0.14 310);
+  --state-reinforcement-foreground: oklch(0.92 0.04 310);
+  --state-idle: oklch(0.30 0 0);
+  --state-idle-foreground: oklch(0.85 0 0);
 
-  --difficulty-easy: oklch(0.3 0.06 160);
-  --difficulty-easy-foreground: oklch(0.85 0.14 160);
-  --difficulty-medium: oklch(0.32 0.07 75);
-  --difficulty-medium-foreground: oklch(0.87 0.14 82);
-  --difficulty-hard: oklch(0.32 0.08 20);
-  --difficulty-hard-foreground: oklch(0.83 0.13 20);
-  --difficulty-unrated: oklch(0.28 0 0);
-  --difficulty-unrated-foreground: oklch(0.78 0 0);
+  --difficulty-easy: oklch(0.38 0.14 155);
+  --difficulty-easy-foreground: oklch(0.92 0.04 155);
+  --difficulty-medium: oklch(0.42 0.14 80);
+  --difficulty-medium-foreground: oklch(0.92 0.04 80);
+  --difficulty-hard: oklch(0.40 0.16 25);
+  --difficulty-hard-foreground: oklch(0.92 0.04 25);
+  --difficulty-unrated: oklch(0.30 0 0);
+  --difficulty-unrated-foreground: oklch(0.85 0 0);
 
   --success: oklch(0.3 0.06 155);
   --success-foreground: oklch(0.84 0.13 155);
@@ -253,21 +251,21 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
   --chart-background: oklch(0.145 0 0);
-  --chart-foreground: oklch(0.45 0 0);
-  --chart-foreground-muted: oklch(0.65 0.01 260);
-  --chart-crosshair: oklch(0.45 0 0);
-  --chart-grid: oklch(0.25 0 0);
+  --chart-foreground: oklch(0.985 0 0);
+  --chart-foreground-muted: oklch(0.65 0 0);
+  --chart-crosshair: oklch(0.985 0 0);
+  --chart-grid: oklch(0.30 0 0);
   --chart-brush-border: var(--chart-grid);
-  --chart-marker-background: oklch(0.25 0.01 260);
-  --chart-marker-border: oklch(0.4 0.01 260);
-  --chart-marker-foreground: oklch(0.9 0 0);
-  --chart-label: oklch(0.75 0.01 260);
-  --chart-scale-01: oklch(0.28 0.03 270);
-  --chart-scale-02: oklch(0.38 0.04 270);
-  --chart-scale-03: oklch(0.48 0.05 270);
-  --chart-scale-04: oklch(0.58 0.06 270);
-  --chart-scale-05: oklch(0.68 0.07 270);
-  --chart-scale-pattern-color: oklch(0.145 0 0);
+  --chart-marker-background: oklch(0.25 0 0);
+  --chart-marker-border: oklch(0.985 0 0);
+  --chart-marker-foreground: oklch(0.985 0 0);
+  --chart-label: oklch(0.75 0 0);
+  --chart-scale-01: oklch(0.22 0.03 90);
+  --chart-scale-02: oklch(0.32 0.04 90);
+  --chart-scale-03: oklch(0.42 0.05 90);
+  --chart-scale-04: oklch(0.52 0.06 90);
+  --chart-scale-05: oklch(0.62 0.07 90);
+  --chart-scale-pattern-color: oklch(0.20 0.02 90);
 }
 
 /* ── Motion tokens ──────────────────────────────────────────────────────────
@@ -292,12 +290,15 @@
   /* Nothing waits longer than this, however deep in a list it sits. */
   --stagger-cap: 330ms;
 
-  --lift: -2px;
+  /* Neo-brutalist shadow tokens — hard offset, no blur, currentColor. */
+  --shadow-neo-sm: 2px 2px 0px 0px currentColor;
+  --shadow-neo: 3px 3px 0px 0px currentColor;
+  --shadow-neo-lg: 5px 5px 0px 0px currentColor;
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
@@ -368,21 +369,20 @@
     animation: fade-out-collapse var(--duration-base) var(--ease-in-out) both;
   }
 
-  /* Interaction feedback. Transform only, so the focus ring is never clipped
-     or repainted. */
-  .interactive-lift {
+  /* Neo-brutalist interaction feedback. Press-down on active: element shifts
+     by the shadow offset and shadow disappears, simulating a physical press.
+     Compositor-only (transform + box-shadow). */
+  .interactive-press {
     transition:
       transform var(--duration-fast) var(--ease-out),
+      box-shadow var(--duration-fast) var(--ease-out),
       border-color var(--duration-fast) var(--ease-out),
       background-color var(--duration-fast) var(--ease-out);
   }
 
-  .interactive-lift:hover {
-    transform: translate3d(0, var(--lift), 0);
-  }
-
-  .interactive-lift:active {
-    transform: translate3d(0, 0, 0);
+  .interactive-press:active {
+    transform: translate(2px, 2px);
+    box-shadow: none;
   }
 
   /* Result sets swapping under a pending transition. */
@@ -411,8 +411,7 @@
   .animate-fade-in-up,
   .animate-fade-in,
   .animate-reveal,
-  .interactive-lift:hover,
-  .interactive-lift:active {
+  .interactive-press:active {
     transform: none !important;
   }
 

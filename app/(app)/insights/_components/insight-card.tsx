@@ -21,8 +21,8 @@ export function InsightCardError({
   reset: () => void
 }) {
   return (
-    <section className="flex flex-col items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4">
-      <h2 className="flex items-center gap-2 font-heading text-lg font-semibold tracking-tight">
+    <section className="flex flex-col items-start gap-3 rounded-none border-2 border-destructive bg-destructive/5 p-5 shadow-[var(--shadow-neo)]">
+      <h2 className="flex items-center gap-2 font-heading text-lg font-bold tracking-tight">
         <TriangleAlertIcon className="size-4 text-destructive" aria-hidden />
         {title}
       </h2>
@@ -36,5 +36,5 @@ export function InsightCardError({
 }
 
 export function InsightCardSkeleton({ height = 220 }: { height?: number }) {
-  return <Skeleton className="rounded-xl" style={{ height }} />
+  return <Skeleton className="rounded-none shadow-[var(--shadow-neo)]" style={{ height }} />
 }

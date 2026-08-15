@@ -8,9 +8,9 @@ export function CaughtUp() {
   return (
     <FadeInUp
       index={1}
-      className="flex flex-col items-start gap-3 rounded-xl border border-state-mastered-foreground/20 bg-state-mastered/40 p-6"
+      className="flex flex-col items-start gap-3 rounded-none border-2 border-foreground bg-state-mastered/40 p-6 shadow-[var(--shadow-neo)]"
     >
-      <span className="flex size-10 items-center justify-center rounded-lg bg-state-mastered text-state-mastered-foreground">
+      <span className="flex size-10 items-center justify-center rounded-none bg-state-mastered text-state-mastered-foreground">
         <PartyPopperIcon className="size-5" aria-hidden />
       </span>
       <div className="flex flex-col gap-1">

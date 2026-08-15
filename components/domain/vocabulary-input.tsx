@@ -167,7 +167,7 @@ export function VocabularyInput({
                         current.filter((entry) => entry !== value),
                       )
                     }
-                    className="rounded-full p-0.5 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none"
+                    className="rounded-none p-0.5 hover:bg-muted focus-visible:outline-2 focus-visible:outline-foreground focus-visible:outline-offset-2 focus-visible:outline-none"
                   >
                     <XIcon className="size-3" aria-hidden />
                   </button>
@@ -254,11 +254,10 @@ export function VocabularyInput({
                   <Badge
                     variant={option.kind === "create" ? "outline" : "secondary"}
                     className={cn(
-                      // Hover and keyboard highlight are the same affordance, so
-                      // they get the same ring rather than two rival treatments.
-                      "gap-1.5 hover:ring-2 hover:ring-ring/40",
+                      // they get the same outline rather than two rival treatments.
+                      "gap-1.5 hover:outline hover:outline-2 hover:outline-foreground hover:outline-offset-2",
                       option.kind === "create" && "border-dashed",
-                      index === active && "ring-2 ring-ring/50",
+                      index === active && "outline outline-2 outline-foreground outline-offset-2",
                     )}
                   >
                     {option.kind === "create" ? (

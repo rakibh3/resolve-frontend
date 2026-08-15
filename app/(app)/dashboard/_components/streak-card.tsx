@@ -19,7 +19,7 @@ export function StreakCard({ streak }: { streak: number }) {
     return (
       <FadeInUp
         index={2}
-        className="flex flex-col gap-2 rounded-xl border border-border bg-card p-4"
+        className="flex flex-col gap-2 rounded-none border-2 border-foreground bg-card p-5 shadow-[var(--shadow-neo)]"
       >
         <span className="flex items-center gap-2 text-sm font-medium">
           <FlameIcon className="size-4 text-muted-foreground" aria-hidden />
@@ -35,7 +35,7 @@ export function StreakCard({ streak }: { streak: number }) {
   return (
     <FadeInUp
       index={2}
-      className="flex items-center gap-4 rounded-xl border border-border bg-card p-4"
+      className="flex items-center gap-4 rounded-none border-2 border-foreground bg-card p-5 shadow-[var(--shadow-neo)]"
     >
       <ProgressRing
         value={Math.min(streak / RING_HORIZON_DAYS, 1)}

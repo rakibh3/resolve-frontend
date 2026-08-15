@@ -87,7 +87,7 @@ export function FilterBar({
   const patternCount = filters.list("pattern").length
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4">
+    <div className="flex flex-col gap-3 rounded-none border-2 border-foreground bg-card p-5 shadow-[var(--shadow-neo)]">
       <SearchField />
 
       <div className="flex flex-wrap items-center gap-1.5">
