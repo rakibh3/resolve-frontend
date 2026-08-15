@@ -25,6 +25,15 @@ export const LIMITS = {
   profileNameMax: 100,
   bioMax: 500,
   insightsRangeDays: 365,
+  // ── Recall layer ──
+  patternNameMax: 60,
+  keyInsightMax: 280,
+  approachMax: 4000,
+  pitfallsMax: 2000,
+  complexityMax: 40,
+  // ── Search ──
+  searchQueryMin: 2,
+  searchQueryMax: 200,
 } as const
 
 export const localDateSchema = z
@@ -70,19 +79,41 @@ export const topicNameSchema = z
   .min(1, "Enter a topic name")
   .max(LIMITS.topicNameMax, `Keep it under ${LIMITS.topicNameMax} characters`)
 
+export const patternNameSchema = z
+  .string()
+  .trim()
+  .min(1, "Enter a pattern name")
+  .max(
+    LIMITS.patternNameMax,
+    `Keep it under ${LIMITS.patternNameMax} characters`,
+  )
+
 /**
  * Topic renames slugify to trim → collapse whitespace → lowercase → hyphenate.
  * A name that slugifies to nothing (e.g. "!!!") is a 400.
  */
 export const topicRenameSchema = z.object({
   name: topicNameSchema.refine(
-    (value) => slugifyTopic(value).length > 0,
+    (value) => slugifyName(value).length > 0,
     "That name contains no letters or numbers to slugify",
   ),
 })
 
-/** Mirrors the backend's topic normalization, for collision detection. */
-export function slugifyTopic(name: string): string {
+/** Patterns normalize exactly like topics, and renaming one merges the same way. */
+export const patternRenameSchema = z.object({
+  name: patternNameSchema.refine(
+    (value) => slugifyName(value).length > 0,
+    "That name contains no letters or numbers to slugify",
+  ),
+})
+
+/**
+ * Mirrors the backend's vocabulary normalization, for collision detection.
+ *
+ * Topics and patterns are separate vocabularies but share this rule, which is
+ * why the function is not named for either of them.
+ */
+export function slugifyName(name: string): string {
   return name
     .trim()
     .toLowerCase()
@@ -199,6 +230,70 @@ export const problemPatchSchema = z
     (value) => Object.values(value).some((field) => field !== undefined),
     "Change at least one field",
   )
+
+// ── Recall cards ────────────────────────────────────────────────────────────
+
+/**
+ * The whole card, because the endpoint is a `PUT`.
+ *
+ * There is no partial variant on purpose: `PUT /api/problems/:id/recall`
+ * clears every field the body omits, patterns included. A schema that allowed
+ * a subset would validate a request that silently destroys the rest of the
+ * card.
+ */
+export const recallCardSchema = z.object({
+  keyInsight: z
+    .string()
+    .trim()
+    .min(1, "A card needs at least one key insight")
+    .max(
+      LIMITS.keyInsightMax,
+      `Keep the insight under ${LIMITS.keyInsightMax} characters — it is the one line you reread`,
+    ),
+  approach: z
+    .string()
+    .max(LIMITS.approachMax, "That approach is too long")
+    .nullable(),
+  pitfalls: z
+    .string()
+    .max(LIMITS.pitfallsMax, "That pitfalls note is too long")
+    .nullable(),
+  timeComplexity: z
+    .string()
+    .trim()
+    .max(LIMITS.complexityMax, `Keep it under ${LIMITS.complexityMax} characters`)
+    .nullable(),
+  spaceComplexity: z
+    .string()
+    .trim()
+    .max(LIMITS.complexityMax, `Keep it under ${LIMITS.complexityMax} characters`)
+    .nullable(),
+  /** Display names, not slugs — and the full desired set, not a delta. */
+  patterns: z.array(patternNameSchema),
+})
+
+export type RecallCardFormInput = z.infer<typeof recallCardSchema>
+
+// ── Search ──────────────────────────────────────────────────────────────────
+
+export const searchScopeSchema = z.enum([
+  "problem",
+  "recall",
+  "attempt",
+  "vocabulary",
+])
+
+/**
+ * Below the minimum the API answers 400, so the page renders a prompt instead
+ * of calling. This predicate is that gate.
+ */
+export function isSearchable(query: string | undefined): query is string {
+  const trimmed = query?.trim() ?? ""
+  return (
+    trimmed.length >= LIMITS.searchQueryMin &&
+    trimmed.length <= LIMITS.searchQueryMax
+  )
+}
 
 // ── Revisions ───────────────────────────────────────────────────────────────
 

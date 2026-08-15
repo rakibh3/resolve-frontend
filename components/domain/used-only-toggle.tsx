@@ -6,10 +6,14 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 
 /**
- * The backend treats the literal string `"true"` as true and anything else —
- * including `"1"` — as false, so that exact value is what goes into the URL.
+ * Filters a vocabulary listing down to entries still linked to a problem.
+ *
+ * Shared by `/topics` and `/patterns`: both endpoints spell this parameter the
+ * same way, and both treat the literal string `"true"` as true and anything
+ * else — including `"1"` — as false, so that exact value is what goes into the
+ * URL.
  */
-export function UsedOnlyToggle() {
+export function UsedOnlyToggle({ noun }: { noun: string }) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -35,7 +39,7 @@ export function UsedOnlyToggle() {
         )
       }}
     >
-      {active ? "Showing used topics" : "Show used topics only"}
+      {active ? `Showing used ${noun}` : `Show used ${noun} only`}
     </Button>
   )
 }

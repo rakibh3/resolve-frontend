@@ -5,7 +5,9 @@ import { ExternalLinkIcon, EyeIcon } from "lucide-react"
 
 import { AttemptForm } from "@/app/(app)/_components/attempt-form"
 import { DifficultyBadge } from "@/components/domain/difficulty-badge"
+import { PatternChips } from "@/components/domain/pattern-chips"
 import { PracticeStateBadge } from "@/components/domain/practice-state-badge"
+import { RecallBadge, recallStatus } from "@/components/domain/recall-badge"
 import { stageLabel } from "@/components/domain/stage-label"
 import { TopicChips } from "@/components/domain/topic-chips"
 import { FadeInUp } from "@/components/motion/fade-in-up"
@@ -22,6 +24,7 @@ import { AttemptHistory } from "./_components/attempt-history"
 import { CaptureNotice } from "./_components/capture-notice"
 import { DeleteProblem } from "./_components/delete-problem"
 import { EditMetadata } from "./_components/edit-metadata"
+import { RecallCardPanel } from "./_components/recall-card-panel"
 import { RescheduleForm } from "./_components/reschedule-form"
 import { RevisionFeed } from "./_components/revision-feed"
 import { RevisionTimeline } from "./_components/revision-timeline"
@@ -88,6 +91,12 @@ export default async function ProblemPage({
               <div className="flex flex-wrap items-center gap-2">
                 <DifficultyBadge difficulty={problem.difficulty} />
                 <PracticeStateBadge state={problem.practiceState} />
+                <RecallBadge
+                  status={recallStatus({
+                    hasRecallCard: problem.hasRecallCard,
+                    needsRecallUpdate: problem.needsRecallUpdate,
+                  })}
+                />
                 {problem.solutionViewed && (
                   <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
                     <EyeIcon className="size-3" aria-hidden />
@@ -96,6 +105,7 @@ export default async function ProblemPage({
                 )}
               </div>
               <TopicChips topics={problem.topics} />
+              <PatternChips patterns={problem.patterns} />
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
@@ -156,8 +166,23 @@ export default async function ProblemPage({
           </FadeInUp>
         )}
 
+        {/* Knowledge before history: the card is what the owner comes back to
+            read, and it sits above the attempt log rather than under it. */}
         <FadeInUp
           index={2}
+          className="rounded-xl border border-border bg-card p-4"
+        >
+          <RecallCardPanel
+            problemId={problem.id}
+            card={problem.recallCard}
+            patterns={problem.patterns}
+            needsRecallUpdate={problem.needsRecallUpdate}
+            timezone={timezone}
+          />
+        </FadeInUp>
+
+        <FadeInUp
+          index={3}
           className="flex flex-col gap-4 rounded-xl border border-border bg-card p-4"
         >
           <h2 className="font-heading text-lg font-semibold tracking-tight">
@@ -168,7 +193,7 @@ export default async function ProblemPage({
 
         <div className="grid gap-4 lg:grid-cols-2">
           <FadeInUp
-            index={3}
+            index={4}
             className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4"
           >
             <h2 className="font-heading text-lg font-semibold tracking-tight">
@@ -183,7 +208,7 @@ export default async function ProblemPage({
           </FadeInUp>
 
           <FadeInUp
-            index={4}
+            index={5}
             className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4"
           >
             <h2 className="font-heading text-lg font-semibold tracking-tight">

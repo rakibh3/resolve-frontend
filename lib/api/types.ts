@@ -34,7 +34,18 @@ export type PracticeState =
   | "MASTERED"
   | "NEEDS_REINFORCEMENT"
 
-export type RevisionStage = "DAY_0" | "DAY_1" | "DAY_7" | "DAY_15" | "DAY_30"
+/**
+ * Six rungs, not five. `DAY_3` was added to the ladder — anything that
+ * hard-codes a five-stage sequence is wrong. The reinforcement cycle after a
+ * low-confidence `DAY_30` still restarts at `DAY_7` and skips `DAY_3`.
+ */
+export type RevisionStage =
+  | "DAY_0"
+  | "DAY_1"
+  | "DAY_3"
+  | "DAY_7"
+  | "DAY_15"
+  | "DAY_30"
 
 export type AttemptOutcome =
   | "SOLVED_INDEPENDENTLY"
@@ -55,10 +66,14 @@ export type RevisionEventType =
 export const REVISION_STAGES: readonly RevisionStage[] = [
   "DAY_0",
   "DAY_1",
+  "DAY_3",
   "DAY_7",
   "DAY_15",
   "DAY_30",
 ]
+
+/** The four fields `GET /api/search` can be scoped to. */
+export type SearchScope = "problem" | "recall" | "attempt" | "vocabulary"
 
 /**
  * Difficulty in the backend's enum order — this is the order `sortBy=difficulty`
@@ -78,6 +93,11 @@ export type ApiMeta = {
   limit: number
   total: number
   totalPages?: number
+  /**
+   * Only on bounded listings (search). True when the candidate cap stopped the
+   * scan short — `total` is then the capped count, not the library-wide total.
+   */
+  truncated?: boolean
 }
 
 export type ApiEnvelope<T> = {
@@ -131,6 +151,16 @@ export type OwnerWithProfile = Owner & { profile: Profile | null }
 
 export type TopicRef = { slug: string; name: string }
 
+/**
+ * Structurally identical to `TopicRef`, deliberately a distinct type.
+ *
+ * A *topic* says what a problem is **about** and is imported from LeetCode. A
+ * *pattern* says **how the owner solves it** and is authored by hand, only ever
+ * through a recall card. Two vocabularies, two endpoints — keeping the types
+ * apart is what stops a topic slug being passed to a pattern filter.
+ */
+export type PatternRef = { slug: string; name: string }
+
 export type Problem = {
   id: string
   source: ProblemSource
@@ -146,6 +176,19 @@ export type Problem = {
   solutionViewed: boolean
   metadataEnteredManually: boolean
   topics: TopicRef[]
+  /**
+   * Owner-authored techniques, assigned only through the recall card. Empty
+   * when the problem has no card. `POST`/`PATCH /api/problems` silently ignore
+   * a `patterns` field.
+   */
+  patterns: PatternRef[]
+  hasRecallCard: boolean
+  /**
+   * Derived per read, like `practiceState`: true when a `VIEWED_SOLUTION`
+   * attempt is newer than the card's `updatedAt` — the owner had to look the
+   * answer up after writing their notes. Never recompute or persist it.
+   */
+  needsRecallUpdate: boolean
   /** null until the first attempt starts a cycle. */
   currentStage: RevisionStage | null
   nextDueDate: LocalDate | null
@@ -192,15 +235,33 @@ export type RevisionEvent = {
   createdAt: Instant
 }
 
+/**
+ * The card as embedded in the problem detail response.
+ *
+ * It carries neither `patterns` nor `needsRecallUpdate` — both sit at the top
+ * level of the problem, because both are also present on every listing row.
+ */
+export type EmbeddedRecallCard = {
+  keyInsight: string
+  approach: string | null
+  pitfalls: string | null
+  timeComplexity: string | null
+  spaceComplexity: string | null
+  createdAt: Instant
+  updatedAt: Instant
+}
+
 export type ProblemDetail = Problem & {
   anchorDate: LocalDate | null
   /** Newest first. */
   attempts: Attempt[]
   /** Newest first. */
   revisions: RevisionEvent[]
-  /** Always 5 entries once a cycle exists; empty array otherwise. */
+  /** All 6 stages once a cycle exists; empty array otherwise. */
   timeline: TimelineEntry[]
   cycleStartsOnFirstAttempt: boolean
+  /** Explicitly `null` when there is no card — never omitted. */
+  recallCard: EmbeddedRecallCard | null
 }
 
 /** `alreadyExisted: true` arrives with HTTP 200 and is a success, not an error. */
@@ -257,6 +318,121 @@ export type Topic = {
   updatedAt: Instant
 }
 
+// ── Patterns ────────────────────────────────────────────────────────────────
+// The same shapes as topics over a separate vocabulary with separate endpoints.
+// Patterns have no create and no delete: one appears when a card first names
+// it, and is left behind with `problemCount: 0` when the last card drops it.
+
+export type PatternWithCount = {
+  id: string
+  slug: string
+  name: string
+  problemCount: number
+}
+
+export type Pattern = {
+  id: string
+  slug: string
+  name: string
+  createdAt: Instant
+  updatedAt: Instant
+}
+
+// ── Recall cards ────────────────────────────────────────────────────────────
+
+/**
+ * The body of `PUT /api/problems/:id/recall`.
+ *
+ * This is a `PUT`, not a `PATCH`: every omitted field is **cleared**, and an
+ * omitted `patterns` list wipes the problem's patterns. Always build this from
+ * the card's current values, never from just the fields the owner touched.
+ */
+export type RecallCardInput = {
+  keyInsight: string
+  approach?: string | null
+  pitfalls?: string | null
+  timeComplexity?: string | null
+  spaceComplexity?: string | null
+  /** Pattern **display names**, not slugs. Replaces the whole set. */
+  patterns?: string[]
+}
+
+/** Returned by `GET` and `PUT` on the card endpoint. */
+export type RecallCard = {
+  keyInsight: string
+  approach: string | null
+  pitfalls: string | null
+  timeComplexity: string | null
+  spaceComplexity: string | null
+  patterns: PatternRef[]
+  needsRecallUpdate: boolean
+  createdAt: Instant
+  updatedAt: Instant
+}
+
+export type RecallSheetEntry = {
+  problemId: string
+  title: string
+  difficulty: Difficulty
+  practiceState: PracticeState | null
+  keyInsight: string
+  timeComplexity: string | null
+  spaceComplexity: string | null
+  needsRecallUpdate: boolean
+}
+
+export type RecallSheetGroup = {
+  /** `null` for the trailing "Untagged" group — it has no pattern page. */
+  slug: string | null
+  name: string
+  cards: RecallSheetEntry[]
+}
+
+export type RecallSheet = {
+  /** Most-populated pattern first; the untagged group, if any, is always last. */
+  groups: RecallSheetGroup[]
+  /**
+   * Distinct cards returned — **not** the sum of group sizes. A card tagged
+   * with two patterns appears in two groups but counts once here.
+   */
+  totalCards: number
+  /** True when the server's card cap stopped the scan short. */
+  truncated: boolean
+}
+
+// ── Search ──────────────────────────────────────────────────────────────────
+
+/** Declaration order is also the ranking priority the backend sorts by. */
+export type SearchField =
+  | "title"
+  | "pattern"
+  | "topic"
+  | "keyInsight"
+  | "approach"
+  | "pitfalls"
+  | "statement"
+  | "attemptNote"
+
+export type SearchMatch = {
+  field: SearchField
+  /** Plain text with `…` where it was cut. Escape before rendering. */
+  snippet: string
+  /** Present only when `field === "attemptNote"`. */
+  attemptedAt?: Instant
+}
+
+export type SearchResult = {
+  id: string
+  title: string
+  source: ProblemSource
+  difficulty: Difficulty
+  practiceState: PracticeState | null
+  topics: TopicRef[]
+  patterns: PatternRef[]
+  /** Never empty — a result with no attributable match is dropped. */
+  matches: SearchMatch[]
+}
+
 // ── Dashboard ───────────────────────────────────────────────────────────────
 
 export type DueItem = {
@@ -311,6 +487,18 @@ export type InsightsSummary = {
     firstAttempt: { averageMinutes: number | null; count: number }
     revision: { averageMinutes: number | null; count: number }
   }
+  /**
+   * Lifetime figures — **never** windowed by `range`. Do not label this block
+   * with the selected date range.
+   */
+  recallCoverage: {
+    /** Problems with at least one attempt: the denominator. */
+    attemptedProblems: number
+    withCard: number
+    needsUpdate: number
+    /** Percentage 0–100, or null when nothing has been attempted. */
+    rate: number | null
+  }
 }
 
 export type TopicInsight = {
@@ -326,11 +514,28 @@ export type TopicInsight = {
   weak: boolean
 }
 
+export type InsightThresholds = {
+  minAttempts: number
+  solveRate: number
+  confidence: number
+}
+
 export type TopicInsights = {
   topics: TopicInsight[]
   /** Subset of `topics` where `weak === true`, worst first. */
   weakTopics: TopicInsight[]
-  thresholds: { minAttempts: number; solveRate: number; confidence: number }
+  thresholds: InsightThresholds
+}
+
+/** Identical shape to `TopicInsight`, over techniques instead of subjects. */
+export type PatternInsight = TopicInsight
+
+export type PatternInsights = {
+  patterns: PatternInsight[]
+  /** Subset of `patterns` where `weak === true`, worst first. */
+  weakPatterns: PatternInsight[]
+  /** The same configured thresholds topic insights use. */
+  thresholds: InsightThresholds
 }
 
 export type ActivityDay = { date: LocalDate; count: number }

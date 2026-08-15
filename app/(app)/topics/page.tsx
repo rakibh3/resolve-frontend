@@ -1,11 +1,11 @@
 import { Suspense } from "react"
 import type { Metadata } from "next"
 
+import { UsedOnlyToggle } from "@/components/domain/used-only-toggle"
 import { RouteTransition, Streamed } from "@/components/motion/streamed"
 import { Skeleton } from "@/components/ui/skeleton"
 
 import { TopicList } from "./_components/topic-list"
-import { UsedOnlyToggle } from "./_components/used-only-toggle"
 
 export const metadata: Metadata = {
   title: "Topics",
@@ -48,7 +48,7 @@ export default async function TopicsPage({
           </div>
 
           <Suspense fallback={<Skeleton className="h-7 w-44 rounded-lg" />}>
-            <UsedOnlyToggle />
+            <UsedOnlyToggle noun="topics" />
           </Suspense>
         </div>
 

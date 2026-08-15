@@ -1,6 +1,6 @@
 import { Suspense } from "react"
 import Link from "next/link"
-import { PlusIcon } from "lucide-react"
+import { PlusIcon, SearchIcon } from "lucide-react"
 
 import { ThemeToggle } from "@/components/theme-toggle"
 import { buttonVariants } from "@/components/ui/button"
@@ -35,6 +35,19 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
           <PrimaryNav className="ml-4 hidden md:block" />
 
           <div className="ml-auto flex items-center gap-1.5">
+            {/* Search is a persistent affordance rather than a nav slot: it is
+                reached from wherever you already are, and the top bar is full
+                at five items. */}
+            <Link
+              href="/search"
+              aria-label="Search everything you have written"
+              className={cn(
+                buttonVariants({ variant: "ghost", size: "icon-sm" }),
+              )}
+            >
+              <SearchIcon aria-hidden />
+            </Link>
+
             {/* Styled anchors rather than <Button render={<Link/>}>: a link
                 that navigates must keep link semantics, not be given
                 role="button". */}

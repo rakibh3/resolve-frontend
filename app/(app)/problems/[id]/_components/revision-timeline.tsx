@@ -7,7 +7,11 @@ import { formatLocalDate } from "@/lib/date"
 import { cn } from "@/lib/utils"
 
 /**
- * The five-stage projection.
+ * The stage projection, however many rungs the server sends.
+ *
+ * The ladder is six stages (`DAY_0 → DAY_1 → DAY_3 → DAY_7 → DAY_15 → DAY_30`),
+ * but this renders `timeline` as given rather than assuming a length — a
+ * reinforcement cycle skips `DAY_3` and so produces a shorter list.
  *
  * Every date here comes from the server's `timeline`. Nothing is derived from
  * the anchor plus a stage offset — the engine owns that arithmetic, and a

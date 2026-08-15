@@ -19,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input"
 import type {
   Difficulty,
+  PatternWithCount,
   PracticeState,
   ProblemSource,
   TopicWithCount,
@@ -53,6 +54,12 @@ const SOLUTION_VIEWED: { value: string; label: string }[] = [
   { value: "false", label: "Never seen" },
 ]
 
+const HAS_RECALL_CARD: { value: string; label: string }[] = [
+  { value: "true", label: "Written up" },
+  // The "attempted but never written up" backlog — the most useful of the two.
+  { value: "false", label: "Not written up" },
+]
+
 const SEARCH_DEBOUNCE_MS = 350
 
 /** Radio menus need a value meaning "no filter"; the URL just omits the key. */
@@ -68,9 +75,16 @@ const ANY = "__any"
  * carries its own active count, so nothing about the current filter state is
  * hidden by collapsing it.
  */
-export function FilterBar({ topics }: { topics: TopicWithCount[] }) {
+export function FilterBar({
+  topics,
+  patterns,
+}: {
+  topics: TopicWithCount[]
+  patterns: PatternWithCount[]
+}) {
   const filters = useFilters()
   const statusCount = filters.list("status").length
+  const patternCount = filters.list("pattern").length
 
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4">
@@ -94,7 +108,27 @@ export function FilterBar({ topics }: { topics: TopicWithCount[] }) {
           filterKey="solutionViewed"
           options={SOLUTION_VIEWED}
         />
-        {topics.length > 0 && <TopicFacet topics={topics} />}
+        <SingleFacet
+          label="Recall"
+          filterKey="hasRecallCard"
+          options={HAS_RECALL_CARD}
+        />
+        {topics.length > 0 && (
+          <VocabularyFacet
+            label="Topics"
+            filterKey="topic"
+            options={topics}
+            emptyHint="Topics come from LeetCode metadata and your own tagging."
+          />
+        )}
+        {patterns.length > 0 && (
+          <VocabularyFacet
+            label="Patterns"
+            filterKey="pattern"
+            options={patterns}
+            emptyHint="Patterns are named on recall cards, so a problem with no card can never match one."
+          />
+        )}
 
         {filters.activeCount > 0 && (
           <Button variant="ghost" size="sm" onClick={filters.clearAll}>
@@ -105,12 +139,20 @@ export function FilterBar({ topics }: { topics: TopicWithCount[] }) {
         )}
       </div>
 
-      {/* Only while it actually applies, so it costs nothing by default. */}
+      {/* Only while they actually apply, so they cost nothing by default. */}
       {statusCount > 0 && (
         <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
           <InfoIcon className="mt-px size-3 shrink-0" aria-hidden />
           Problems you have never attempted are excluded while a status filter
           is active — they have no revision cycle to be in a state.
+        </p>
+      )}
+
+      {patternCount > 0 && (
+        <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
+          <InfoIcon className="mt-px size-3 shrink-0" aria-hidden />
+          A pattern filter matches on the problem&rsquo;s recall card, so
+          anything you have not written up is excluded.
         </p>
       )}
     </div>
@@ -245,7 +287,7 @@ function SingleFacet({
   options,
 }: {
   label: string
-  filterKey: "source" | "solutionViewed"
+  filterKey: "source" | "solutionViewed" | "hasRecallCard"
   options: { value: string; label: string }[]
 }) {
   const filters = useFilters()
@@ -289,13 +331,30 @@ function SingleFacet({
   )
 }
 
-function TopicFacet({ topics }: { topics: TopicWithCount[] }) {
+/**
+ * A facet over one of the two vocabularies.
+ *
+ * Topics and patterns are separate vocabularies with separate query params, but
+ * the control is identical: a scrolling checkbox menu, filtering by slug and
+ * displaying the name, in the server's count-descending order.
+ */
+function VocabularyFacet({
+  label,
+  filterKey,
+  options,
+  emptyHint,
+}: {
+  label: string
+  filterKey: "topic" | "pattern"
+  options: (TopicWithCount | PatternWithCount)[]
+  emptyHint: string
+}) {
   const filters = useFilters()
-  const selected = filters.list("topic")
+  const selected = filters.list(filterKey)
 
   return (
     <DropdownMenu>
-      <FacetTrigger label="Topics" count={selected.length} />
+      <FacetTrigger label={label} count={selected.length} />
 
       {/* The vocabulary grows without bound, so the menu scrolls rather than
           the page. Server order is preserved: count descending, then name. */}
@@ -304,26 +363,31 @@ function TopicFacet({ topics }: { topics: TopicWithCount[] }) {
         className="max-h-80 min-w-60 overflow-y-auto"
       >
         <DropdownMenuGroup>
-          <DropdownMenuLabel>Topics</DropdownMenuLabel>
-          {topics.map((topic) => (
+          <DropdownMenuLabel>{label}</DropdownMenuLabel>
+          {options.map((option) => (
             <DropdownMenuCheckboxItem
-              key={topic.slug}
+              key={option.slug}
               // Filter by slug, display name.
-              checked={selected.includes(topic.slug)}
-              onCheckedChange={() => filters.toggle("topic", topic.slug)}
+              checked={selected.includes(option.slug)}
+              onCheckedChange={() => filters.toggle(filterKey, option.slug)}
             >
-              <span className="flex-1 truncate">{topic.name}</span>
+              <span className="flex-1 truncate">{option.name}</span>
               <span
                 className={cn(
                   "tabular-nums text-muted-foreground",
-                  topic.problemCount === 0 && "italic",
+                  option.problemCount === 0 && "italic",
                 )}
               >
-                {topic.problemCount}
+                {option.problemCount}
               </span>
             </DropdownMenuCheckboxItem>
           ))}
         </DropdownMenuGroup>
+
+        <DropdownMenuSeparator />
+        <p className="max-w-56 px-2 py-1.5 text-xs text-muted-foreground">
+          {emptyHint}
+        </p>
       </DropdownMenuContent>
     </DropdownMenu>
   )

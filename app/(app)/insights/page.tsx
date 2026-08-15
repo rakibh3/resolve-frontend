@@ -12,6 +12,7 @@ import { CardBoundary } from "./_components/card-boundary"
 import { InsightCardSkeleton } from "./_components/insight-card"
 import { RangePicker } from "./_components/range-picker"
 import { SummaryCard } from "./_components/summary-card"
+import { WeakPatternsCard } from "./_components/weak-patterns-card"
 import { WeakTopicsCard } from "./_components/weak-topics-card"
 
 export const metadata: Metadata = {
@@ -50,7 +51,7 @@ export default async function InsightsPage({
           <RangePickerSlot />
         </Suspense>
 
-        {/* Four independent boundaries: all four requests start in parallel and
+        {/* Five independent boundaries: all five requests start in parallel and
             each card paints as its own data lands. */}
         <CardBoundary title="Summary">
           <Streamed fallback={<InsightCardSkeleton height={300} />}>
@@ -73,6 +74,12 @@ export default async function InsightsPage({
         <CardBoundary title="Weak topics">
           <Streamed fallback={<InsightCardSkeleton height={280} />}>
             <WeakTopicsCard />
+          </Streamed>
+        </CardBoundary>
+
+        <CardBoundary title="Weak patterns">
+          <Streamed fallback={<InsightCardSkeleton height={280} />}>
+            <WeakPatternsCard />
           </Streamed>
         </CardBoundary>
       </div>

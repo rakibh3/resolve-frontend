@@ -30,14 +30,21 @@ export type AttemptState = {
 }
 
 /**
- * Every attempt write replays the problem's whole schedule, so all four of
- * these views can change — including from an edit to an attempt months old.
+ * Every attempt write replays the problem's whole schedule, so all of these
+ * views can change — including from an edit to an attempt months old.
+ *
+ * The recall sheet is in the list even though attempts never touch a card:
+ * `needsRecallUpdate` is derived by comparing the card's `updatedAt` against
+ * the newest `VIEWED_SOLUTION` attempt, so logging one — or deleting the one
+ * that set the flag — silently changes the card's stale state wherever it is
+ * rendered.
  */
 function revalidateScheduleViews(problemId: string) {
   revalidatePath(paths.problem(problemId))
   revalidatePath(paths.problems)
   revalidatePath(paths.dashboard)
   revalidatePath(paths.insights)
+  revalidatePath(paths.recall)
 }
 
 /** Duration and confidence must be JSON numbers — the backend does not coerce. */

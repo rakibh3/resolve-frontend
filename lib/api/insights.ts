@@ -8,6 +8,7 @@ import type {
   BacklogInsights,
   InsightsSummary,
   LocalDate,
+  PatternInsights,
   TopicInsights,
 } from "./types"
 
@@ -18,7 +19,8 @@ export type InsightsRange = { from?: LocalDate; to?: LocalDate }
 
 /**
  * Headline KPIs. Omitting both range bounds means "all time" for the windowed
- * metrics — but `mastered` is a current total either way.
+ * metrics — but `mastered` is a current total either way, and so is the whole
+ * `recallCoverage` block.
  */
 export const getInsightsSummary = cache(async (range: InsightsRange = {}) => {
   const { data } = await apiFetch<InsightsSummary>("/api/insights/summary", {
@@ -35,6 +37,19 @@ export const getInsightsSummary = cache(async (range: InsightsRange = {}) => {
  */
 export const getTopicInsights = cache(async () => {
   const { data } = await apiFetch<TopicInsights>("/api/insights/topics")
+  return data
+})
+
+/**
+ * Per-pattern performance and the derived weak subset — the same shape and the
+ * same configured thresholds as topic insights, over techniques rather than
+ * subject areas. Like topics, it takes no range and is always all-time.
+ *
+ * A pattern only exists once a recall card names it, so this view is empty
+ * until the owner has written some cards.
+ */
+export const getPatternInsights = cache(async () => {
+  const { data } = await apiFetch<PatternInsights>("/api/insights/patterns")
   return data
 })
 

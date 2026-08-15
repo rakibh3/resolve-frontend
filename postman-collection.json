@@ -34,6 +34,11 @@
       "key": "topicId",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "patternId",
+      "value": "",
+      "type": "string"
     }
   ],
   "event": [
@@ -461,8 +466,8 @@
           "name": "List Problems — Filtered",
           "request": {
             "method": "GET",
-            "url": "{{baseUrl}}/problems?source=LEETCODE&difficulty=MEDIUM,HARD&topic=array,graph&status=OVERDUE&solutionViewed=false&search=sum",
-            "description": "Filters combine conjunctively. `difficulty`, `status`, and `topic` accept comma-separated lists and match any supplied value. `status` accepts SCHEDULED, DUE, OVERDUE, MASTERED, NEEDS_REINFORCEMENT — the first three are evaluated against today in the owner timezone, and problems with no revision cycle are excluded. `search` is a case-insensitive title match. Sort over createdAt, title, difficulty, or nextDueAt."
+            "url": "{{baseUrl}}/problems?source=LEETCODE&difficulty=MEDIUM,HARD&topic=array,graph&pattern=two-pointers&status=OVERDUE&solutionViewed=false&hasRecallCard=false&search=sum",
+            "description": "Filters combine conjunctively. `difficulty`, `status`, `topic`, and `pattern` accept comma-separated lists and match any supplied value. `status` accepts SCHEDULED, DUE, OVERDUE, MASTERED, NEEDS_REINFORCEMENT — the first three are evaluated against today in the owner timezone, and problems with no revision cycle are excluded. `hasRecallCard=false` is the “attempted but never written up” backlog. `search` is a case-insensitive title match — use /search to match note and card text. Sort over createdAt, title, difficulty, or nextDueAt."
           },
           "event": [
             {
@@ -623,7 +628,7 @@
                 }
               }
             },
-            "description": "Outcome is one of SOLVED_INDEPENDENTLY, SOLVED_WITH_HINT, VIEWED_SOLUTION. Duration is an integer 1–1440 minutes, confidence an integer 1–5, notes optional. `attemptedAt` defaults to now and may be backdated but not future-dated. The response carries the resulting stage and next due date. Saves `attemptId`."
+            "description": "Outcome is one of SOLVED_INDEPENDENTLY, SOLVED_WITH_HINT, VIEWED_SOLUTION. Duration is an integer 1–1440 minutes, confidence an integer 1–5, notes optional. `attemptedAt` defaults to now and may be backdated but not future-dated. The response carries the resulting stage and next due date. On a problem with no prior attempts this starts the cycle at DAY_1. Saves `attemptId`."
           },
           "event": [
             {
@@ -640,6 +645,43 @@
                   "    pm.collectionVariables.set('attemptId', data.attempt.id);",
                   "    console.log('✅ attemptId saved:', data.attempt.id);",
                   "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Log Attempt — Advance to Day 3",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/problems/{{problemId}}/attempts",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"outcome\": \"SOLVED_INDEPENDENTLY\",\n    \"durationMinutes\": 12,\n    \"confidence\": 4,\n    \"notes\": \"second pass, no hints needed\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Run immediately after `Log Attempt` on the same problem. The ladder is DAY_0 → DAY_1 → DAY_3 → DAY_7 → DAY_15 → DAY_30, so completing DAY_1 independently advances to DAY_3, due the anchor plus 3 days. A third independent solve then advances to DAY_7."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Advanced to DAY_3', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "    pm.expect(pm.response.json().data.currentStage).to.eql('DAY_3');",
+                  "});"
                 ]
               }
             }
@@ -810,7 +852,7 @@
     },
     {
       "name": "Revisions",
-      "description": "The Day 0/1/7/15/30 schedule and its audit trail. Every scheduling transition is recorded as a revision event.",
+      "description": "The Day 0/1/3/7/15/30 schedule and its audit trail. Every scheduling transition is recorded as a revision event.",
       "item": [
         {
           "name": "Get Revision History",
@@ -961,6 +1003,224 @@
       ]
     },
     {
+      "name": "Patterns",
+      "description": "The owner-authored technique vocabulary. Where a topic says what a problem is about, a pattern says how it is solved. Patterns are created on demand when a recall card is written — there is no create endpoint, and they cannot be assigned through the problem payload.",
+      "item": [
+        {
+          "name": "List Patterns",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/patterns",
+            "description": "Every pattern with its problem count, most-used first. Near-duplicate entries show up here as singletons."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Patterns listed', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Patterns — Used Only",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/patterns?usedOnly=true",
+            "description": "Excludes patterns no longer linked to any problem."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Used patterns listed', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Rename Pattern",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/patterns/{{patternId}}",
+            "description": "Renames a pattern, re-deriving its slug. When the new name normalizes onto an existing pattern the two merge: links move to the survivor, duplicates collapse, and the emptied record is deleted. This is how `two-pointer` and `two-pointers` get collapsed months after both were invented.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Two Pointers\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Pattern renamed', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Recall",
+      "description": "The recall layer: the durable knowledge record for a problem, and the pattern-grouped sheet for reviewing technique-by-technique. A card is independent of the attempt log — writing one never touches the revision schedule.",
+      "item": [
+        {
+          "name": "Write Recall Card",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/problems/{{problemId}}/recall",
+            "description": "Creates the card (201) or replaces it (200). Replacement is total: a field omitted here is stored as empty, and an omitted `patterns` list clears the problem's patterns. Saving always advances the card's updatedAt, which is what clears a stale flag.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"keyInsight\": \"Expand around each centre; a palindrome is symmetric about one index or one gap\",\n    \"approach\": \"For each i, expand (i, i) and (i, i+1) while the ends match, tracking the longest span.\",\n    \"pitfalls\": \"Forgetting the even-length centre; off-by-one when slicing the final span.\",\n    \"timeComplexity\": \"O(n^2)\",\n    \"spaceComplexity\": \"O(1)\",\n    \"patterns\": [\n        \"Two Pointers\",\n        \"Expand Around Centre\"\n    ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Recall card written', function () {",
+                  "    pm.expect([200, 201]).to.include(pm.response.code);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Recall Card",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/problems/{{problemId}}/recall",
+            "description": "The card with its patterns and `needsRecallUpdate`. Responds 404 when the problem has no card yet."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Recall card retrieved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Recall Card",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/problems/{{problemId}}/recall",
+            "description": "Removes the card and the problem's patterns — patterns are authored as part of the card. Attempts and the revision schedule are untouched."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Recall card deleted', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Recall Sheet",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/recall/sheet",
+            "description": "Every card grouped by pattern — the pre-interview skim. A problem tagged with several patterns appears under each; cards with no pattern land in a trailing untagged group."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Recall sheet retrieved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Recall Sheet — Filtered",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/recall/sheet?pattern=two-pointers&difficulty=MEDIUM",
+            "description": "Filters by pattern, topic, difficulty, and practice status, combined conjunctively. Status is evaluated against today's date in the owner's timezone."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Filtered recall sheet retrieved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Dashboard",
       "description": "The one question the product answers every day.",
       "item": [
@@ -1059,6 +1319,28 @@
           ]
         },
         {
+          "name": "Patterns",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/insights/patterns",
+            "description": "Per-pattern solve rate, average confidence, and average solve time, with weak patterns flagged — the same shape and the same configured thresholds as topic insights, over techniques rather than subject areas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Pattern insights retrieved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "Activity",
           "request": {
             "method": "GET",
@@ -1094,6 +1376,78 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Backlog retrieved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Search",
+      "description": "Cross-entity search over everything the owner has written: problem titles and statements, recall-card fields, attempt notes, and topic and pattern names. Case-insensitive substring matching over a bounded candidate set — `meta.truncated` reports when the cap stopped the scan short.",
+      "item": [
+        {
+          "name": "Search",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/search?q=monotonic",
+            "description": "Each matching problem is returned once, with the fields that matched and a snippet around each. Results are ordered by the highest-priority field matched: title, pattern, topic, key insight, approach, pitfalls, statement, attempt note."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Search results retrieved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search — Scoped to Recall Cards",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/search?q=monotonic&scope=recall",
+            "description": "Restricts matching to the owner's own writing. Scopes: problem, recall, attempt, vocabulary."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Scoped search results retrieved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search — Paginated",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/search?q=array&page=2&limit=10",
+            "description": "Pagination applies within the bounded candidate set."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Paginated search results retrieved', function () {",
                   "    pm.response.to.have.status(200);",
                   "    pm.expect(pm.response.json().success).to.be.true;",
                   "});"

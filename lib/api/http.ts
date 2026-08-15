@@ -104,7 +104,20 @@ type RequestOptions = {
   tags?: string[]
 }
 
-export type ApiResult<T> = { data: T; meta?: ApiMeta; message?: string }
+export type ApiResult<T> = {
+  data: T
+  meta?: ApiMeta
+  message?: string
+  /**
+   * The HTTP status.
+   *
+   * Needed because a couple of endpoints distinguish two successes only by
+   * status: `PUT .../recall` answers 201 on create and 200 on replace, and
+   * `POST /api/problems` answers 201 on create and 200 for a URL already in the
+   * library. The body cannot always tell them apart.
+   */
+  statusCode: number
+}
 
 function serializeQuery(url: URL, query: QueryParams | undefined) {
   for (const [key, value] of Object.entries(query ?? {})) {
@@ -160,5 +173,10 @@ export async function apiFetch<T>(
     )
   }
 
-  return { data: payload.data, meta: payload.meta, message: payload.message }
+  return {
+    data: payload.data,
+    meta: payload.meta,
+    message: payload.message,
+    statusCode: response.status,
+  }
 }

@@ -22,8 +22,10 @@ export type FilterKey =
   | "status"
   | "difficulty"
   | "topic"
+  | "pattern"
   | "source"
   | "solutionViewed"
+  | "hasRecallCard"
   | "q"
   | "sortBy"
   | "sortOrder"
@@ -50,8 +52,10 @@ const FILTER_KEYS: FilterKey[] = [
   "status",
   "difficulty",
   "topic",
+  "pattern",
   "source",
   "solutionViewed",
+  "hasRecallCard",
   "q",
 ]
 

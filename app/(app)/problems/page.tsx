@@ -15,8 +15,8 @@ import {
   FilterBarSkeleton,
   LibrarySkeleton,
 } from "./_components/library-skeleton"
+import { FilterSlot } from "./_components/filter-slot"
 import { SortControl } from "./_components/sort-control"
-import { TopicFilterSlot } from "./_components/topic-filter-slot"
 
 export const metadata: Metadata = {
   title: "Library",
@@ -64,12 +64,23 @@ function csv<T extends string>(
   return values.length > 0 ? values : undefined
 }
 
+/**
+ * The backend wants the string literals `"true"` / `"false"`; the client
+ * serializer turns a boolean back into exactly those, so anything else in the
+ * URL becomes "no filter" rather than a 400.
+ */
+function tristate(raw: string | undefined): boolean | undefined {
+  if (raw === "true") return true
+  if (raw === "false") return false
+  return undefined
+}
+
 function buildQuery(params: RawParams): ProblemListQuery {
   const source = one(params, "source")
-  const solutionViewed = one(params, "solutionViewed")
   const sortBy = one(params, "sortBy")
   const sortOrder = one(params, "sortOrder")
   const topic = one(params, "topic")
+  const pattern = one(params, "pattern")
   const page = Number(one(params, "page") ?? 1)
 
   return {
@@ -82,14 +93,9 @@ function buildQuery(params: RawParams): ProblemListQuery {
         ? (source as ProblemSource)
         : undefined,
     topic: topic ? topic.split(",").filter(Boolean) : undefined,
-    // The backend wants the string literals; the client serializer turns this
-    // boolean back into exactly "true" or "false".
-    solutionViewed:
-      solutionViewed === "true"
-        ? true
-        : solutionViewed === "false"
-          ? false
-          : undefined,
+    pattern: pattern ? pattern.split(",").filter(Boolean) : undefined,
+    solutionViewed: tristate(one(params, "solutionViewed")),
+    hasRecallCard: tristate(one(params, "hasRecallCard")),
     search: one(params, "q"),
     sortBy: sortBy && SORT_FIELDS.has(sortBy as ProblemSortBy)
       ? (sortBy as ProblemSortBy)
@@ -105,8 +111,10 @@ const FILTER_PARAMS = [
   "status",
   "difficulty",
   "topic",
+  "pattern",
   "source",
   "solutionViewed",
+  "hasRecallCard",
   "q",
 ] as const
 
@@ -132,7 +140,7 @@ export default async function ProblemsPage({
             </div>
 
             <Suspense fallback={<FilterBarSkeleton />}>
-              <TopicFilterSlot />
+              <FilterSlot />
             </Suspense>
 
             <Streamed fallback={<LibrarySkeleton />}>

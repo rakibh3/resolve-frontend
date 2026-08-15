@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import type { TopicWithCount } from "@/lib/api/types"
-import { LIMITS, slugifyTopic } from "@/lib/validation"
+import { LIMITS, slugifyName } from "@/lib/validation"
 
 import { renameTopic, type RenameTopicState } from "../actions"
 
@@ -51,7 +51,7 @@ export function RenameTopic({
   )
 
   const trimmed = name.trim()
-  const slug = slugifyTopic(trimmed)
+  const slug = slugifyName(trimmed)
 
   // A rename whose slug matches a *different* topic merges the two and deletes
   // this one. Warn before it happens, not after.

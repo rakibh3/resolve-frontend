@@ -1,10 +1,12 @@
 import Link from "next/link"
-import { EyeIcon } from "lucide-react"
+import { EyeIcon, TriangleAlertIcon } from "lucide-react"
 
 import { DifficultyBadge } from "@/components/domain/difficulty-badge"
+import { PatternChips } from "@/components/domain/pattern-chips"
 import { PracticeStateBadge } from "@/components/domain/practice-state-badge"
 import { stageLabel } from "@/components/domain/stage-label"
 import { TopicChips } from "@/components/domain/topic-chips"
+import { Badge } from "@/components/ui/badge"
 import type { Problem } from "@/lib/api/types"
 import { formatLocalDate } from "@/lib/date"
 
@@ -47,10 +49,25 @@ export function LibraryProblemRow({ problem }: { problem: Problem }) {
             : ""}
         </p>
 
-        <TopicChips topics={problem.topics} max={4} />
+        <div className="flex flex-wrap items-center gap-1">
+          <TopicChips topics={problem.topics} max={3} />
+          <PatternChips patterns={problem.patterns} max={2} />
+        </div>
       </div>
 
       <div className="flex shrink-0 items-center gap-2">
+        {/* Only the stale case gets a badge here. "Has a card" is quiet good
+            news and would add a chip to most rows for nothing; "the card is
+            wrong" is the one worth interrupting a scan for. */}
+        {problem.needsRecallUpdate && (
+          <Badge
+            className="bg-state-overdue text-state-overdue-foreground"
+            title="You viewed a solution after writing this card, so it is out of date"
+          >
+            <TriangleAlertIcon aria-hidden />
+            Stale card
+          </Badge>
+        )}
         <DifficultyBadge difficulty={problem.difficulty} />
         {/* Rendered verbatim from the server, never re-derived from the date. */}
         <PracticeStateBadge state={problem.practiceState} />

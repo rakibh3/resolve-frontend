@@ -1,9 +1,12 @@
+import Link from "next/link"
+
 import {
   AnimatedNumber,
   NullableNumber,
 } from "@/components/motion/animated-number"
 import { ProgressRing } from "@/components/motion/progress-ring"
 import { getInsightsSummary, type InsightsRange } from "@/lib/api/insights"
+import type { InsightsSummary } from "@/lib/api/types"
 import { cn } from "@/lib/utils"
 
 export async function SummaryCard({ range }: { range: InsightsRange }) {
@@ -96,7 +99,84 @@ export async function SummaryCard({ range }: { range: InsightsRange }) {
           align="end"
         />
       </div>
+
+      <RecallCoverage coverage={summary.recallCoverage} />
     </section>
+  )
+}
+
+/**
+ * How much of what you have practised you have actually written up.
+ *
+ * Lifetime figures, never windowed by the range picker above — so the block
+ * says so rather than letting the picker imply otherwise, the same way the
+ * mastered count does.
+ */
+function RecallCoverage({
+  coverage,
+}: {
+  coverage: InsightsSummary["recallCoverage"]
+}) {
+  const gap = coverage.attemptedProblems - coverage.withCard
+
+  return (
+    <div className="flex flex-col gap-3 border-t border-border pt-4">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h3 className="text-sm font-medium">Recall coverage</h3>
+        <span className="text-xs text-muted-foreground">
+          All time — the range above does not apply
+        </span>
+      </div>
+
+      {coverage.rate === null ? (
+        <p className="text-sm text-muted-foreground">
+          Nothing attempted yet, so there is nothing to write up.
+        </p>
+      ) : (
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <span className="font-heading text-2xl font-semibold tracking-tight tabular-nums">
+              <AnimatedNumber value={coverage.rate} decimals={0} suffix="%" />
+            </span>
+            <span className="text-sm text-muted-foreground tabular-nums">
+              {coverage.withCard.toLocaleString()} of{" "}
+              {coverage.attemptedProblems.toLocaleString()} attempted problems
+              have a card
+            </span>
+          </div>
+
+          {/* A bar rather than a second ring: this is a proportion read at a
+              glance beside the completion ring, not competing with it. */}
+          <div
+            className="h-1.5 w-full overflow-hidden rounded-full bg-muted"
+            role="img"
+            aria-label={`Recall coverage ${coverage.rate}%`}
+          >
+            <div
+              className="h-full rounded-full bg-state-mastered-foreground"
+              style={{ width: `${Math.min(100, Math.max(0, coverage.rate))}%` }}
+            />
+          </div>
+
+          <p className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+            {gap > 0 && (
+              <Link
+                href="/problems?hasRecallCard=false"
+                className="underline underline-offset-4 hover:text-foreground focus-visible:outline-none"
+              >
+                {gap.toLocaleString()} still to write up
+              </Link>
+            )}
+            {coverage.needsUpdate > 0 && (
+              <span className="text-state-overdue-foreground">
+                {coverage.needsUpdate.toLocaleString()}{" "}
+                {coverage.needsUpdate === 1 ? "card is" : "cards are"} stale
+              </span>
+            )}
+          </p>
+        </div>
+      )}
+    </div>
   )
 }
 

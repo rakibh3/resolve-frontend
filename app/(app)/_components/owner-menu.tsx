@@ -15,6 +15,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
+import { SECONDARY_NAV_ITEMS } from "@/lib/nav"
+
 import { logout } from "../actions"
 
 export type OwnerSummary = {
@@ -59,6 +61,20 @@ export function OwnerMenu({ owner }: { owner: OwnerSummary | null }) {
               </span>
             ) : null}
           </DropdownMenuLabel>
+        </DropdownMenuGroup>
+
+        <DropdownMenuSeparator />
+
+        {/* Vocabulary management is not in the top bar — this and the mobile
+            drawer are how it is reached on a wide viewport. */}
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>Vocabulary</DropdownMenuLabel>
+          {SECONDARY_NAV_ITEMS.map(({ href, label, Icon }) => (
+            <DropdownMenuItem key={href} render={<Link href={href} />}>
+              <Icon aria-hidden />
+              {label}
+            </DropdownMenuItem>
+          ))}
         </DropdownMenuGroup>
 
         <DropdownMenuSeparator />
